@@ -63,8 +63,8 @@
     <Compile Include="Classes\Game\GameField.cs" />
     <Compile Include="Classes\Game\Lib.cs" />
     <Compile Include="Classes\Checkers\White\WhiteChecker.cs" />
-    <Compile Include="Classes\Checkers\White\WhiteKingChecker.cs" />
-    <Compile Include="Classes\Checkers\White\WhiteNormalChecker.cs" />
+    <Compile Include="Classes\Checkers\White\WhiteKingCheckerState.cs" />
+    <Compile Include="Classes\Checkers\White\WhiteNormalCheckerState.cs" />
     <Page Include="GameControlForm.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -85,8 +85,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Checkers\Black\BlackKingChecker.cs" />
-    <Compile Include="Classes\Checkers\Black\BlackNormalChecker.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackKingCheckerState.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackNormalCheckerState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

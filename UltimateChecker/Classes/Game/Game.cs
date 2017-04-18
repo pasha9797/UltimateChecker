@@ -43,12 +43,12 @@ namespace UltimateChecker
             if (checker is WhiteChecker)
             {
                 if (checker.CurrentCoord.Row == 1)
-                    checker.CheckerState = new WhiteKingChecker();
+                    checker.CheckerState = new WhiteKingCheckerState();
             }
             else
             {
                 if (checker.CurrentCoord.Row == 8)
-                    checker.CheckerState = new BlackKingChecker();
+                    checker.CheckerState = new BlackKingCheckerState();
             }
         }
 

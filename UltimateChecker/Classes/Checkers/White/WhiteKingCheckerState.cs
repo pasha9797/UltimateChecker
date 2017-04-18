@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UltimateChecker
 {
-   public class WhiteKingChecker:IWhiteCheckerState
+   public class WhiteKingCheckerState:IWhiteCheckerState
     {
         public bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field) //ррррекурсия
         {

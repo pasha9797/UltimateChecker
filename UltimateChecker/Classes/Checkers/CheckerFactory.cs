@@ -10,7 +10,7 @@ namespace UltimateChecker
     {
         public static BlackChecker CreateBlack(Coord coord, IGameField gameField)
         {
-            BlackChecker black = new BlackChecker(new BlackNormalChecker());
+            BlackChecker black = new BlackChecker(new BlackNormalCheckerState());
             black.CurrentCoord = coord;
             gameField.Grid[coord.Row][coord.Column] = black;
             return black;
@@ -18,7 +18,7 @@ namespace UltimateChecker
 
         public static WhiteChecker CreateWhite(Coord coord, IGameField gameField)
         {
-            WhiteChecker white = new WhiteChecker(new WhiteNormalChecker());
+            WhiteChecker white = new WhiteChecker(new WhiteNormalCheckerState());
             white.CurrentCoord = coord;
             gameField.Grid[coord.Row][coord.Column] = white;
             return white;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UltimateChecker
 {
-    public class WhiteNormalChecker : IWhiteCheckerState
+    public class BlackNormalCheckerState : IBlackCheckerState
     {
         public bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field)
         {
@@ -20,14 +20,14 @@ namespace UltimateChecker
 
             if (Math.Abs(dRow) == 1 && Math.Abs(dColumn) == 1)//если лишь один шаг
             {
-                if (dRow == -1)
-                    return true;//белым только вверх
+                if (dRow == 1)
+                    return true;//черным только вниз
             }
 
             else if (Math.Abs(dRow) == 2 && Math.Abs(dColumn) == 2)//если хотим бить
             {
                 IChecker neigbour = field.Grid[CurrentCoord.Row + dRow / 2][CurrentCoord.Column + dColumn / 2]; //ищем кого бить
-                if (neigbour != null && neigbour is BlackChecker) //если там враг
+                if (neigbour != null && neigbour is WhiteChecker) //если там враг
                 {
                     return true;
                 }
