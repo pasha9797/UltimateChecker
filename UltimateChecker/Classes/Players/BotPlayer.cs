@@ -25,9 +25,9 @@ namespace UltimateChecker
             resiver.ExecuteStep(killer, victim);
         }
 
-        public void Cansel()
+        public void Cansel(ICommand command)
         {
-            resiver.UndoStep();
+            resiver.UndoStep(command);
         }
 
         public string Name()
@@ -81,14 +81,14 @@ namespace UltimateChecker
             switch (side)
             {
                 case PlayersSide.WHITE:
-                    foreach (var checker in gameField.whiteCheckers)
+                    foreach (var checker in gameField.WhiteCheckers)
                     {
                         IChecker victim = CheckPossibilityToKill(checker);
                         if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim), 10);
                     }
                     break;
                 case PlayersSide.BLACK:
-                    foreach (var checker in gameField.blackCheckers)
+                    foreach (var checker in gameField.BlackCheckers)
                     {
                         IChecker victim = CheckPossibilityToKill(checker);
                         if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim), 10);

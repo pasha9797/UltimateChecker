@@ -13,5 +13,8 @@ namespace UltimateChecker
         void RestoreState(FieldState state);
         void StepsHistoryAdd(string log);
         string[] StepsHistory { get; }
+        List<WhiteChecker> WhiteCheckers { get; }
+        List<BlackChecker> BlackCheckers { get; }
+        PlayersSide Turn { get; set; }
     }
 }

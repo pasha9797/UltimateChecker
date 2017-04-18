@@ -56,14 +56,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithms\PriorityQueue.cs" />
-    <Compile Include="Classes\BotPlayer.cs" />
-    <Compile Include="Classes\FieldState.cs" />
-    <Compile Include="Classes\Game.cs" />
-    <Compile Include="Classes\GameField.cs" />
-    <Compile Include="Classes\Lib.cs" />
-    <Compile Include="Classes\WhiteChecker.cs" />
-    <Compile Include="Classes\WhiteKingChecker.cs" />
-    <Compile Include="Classes\WhiteNormalChecker.cs" />
+    <Compile Include="Classes\Players\BotPlayer.cs" />
+    <Compile Include="Classes\Checkers\CheckerFactory.cs" />
+    <Compile Include="Classes\Game\FieldState.cs" />
+    <Compile Include="Classes\Game\Game.cs" />
+    <Compile Include="Classes\Game\GameField.cs" />
+    <Compile Include="Classes\Game\Lib.cs" />
+    <Compile Include="Classes\Checkers\White\WhiteChecker.cs" />
+    <Compile Include="Classes\Checkers\White\WhiteKingChecker.cs" />
+    <Compile Include="Classes\Checkers\White\WhiteNormalChecker.cs" />
     <Page Include="GameControlForm.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,7 +73,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes\BlackChecker.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackChecker.cs" />
     <Compile Include="Interfaces\IChecker.cs" />
     <Compile Include="Interfaces\ICommand.cs" />
     <Compile Include="Interfaces\IGame.cs" />
@@ -84,8 +85,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\BlackKingChecker.cs" />
-    <Compile Include="Classes\BlackNormalChecker.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackKingChecker.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackNormalChecker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

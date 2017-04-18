@@ -9,16 +9,20 @@ namespace UltimateChecker
     class Game : IGame
     {
         public IGameField GameField { get; }
-        private Stack<FieldState> states { get; }
+        public IPlayer WhitePlayer { get; }
+        public IPlayer BlackPlayer { get; }
+
+        private Dictionary<ICommand,FieldState> states { get; }
 
         public void ExecuteStep(IChecker mover, Coord coord)
         {
             if (mover.CheckPossibility(coord, GameField))
             {
-                SaveState();
+
                 LogStep(mover.CurrentCoord, coord, mover);
                 MoveCheckerDirectly(mover, coord);
                 CheckGettingKing(mover);
+                NextTurn();
             }
         }
 
@@ -26,11 +30,11 @@ namespace UltimateChecker
         {
             if (killer.CheckPossibility(coord, GameField))
             {
-                SaveState();
                 LogStepWithKill(killer.CurrentCoord, coord, killer, victim);
                 MoveCheckerDirectly(killer, coord);
                 GameField.Grid[victim.CurrentCoord.Row][victim.CurrentCoord.Column] = null;
                 CheckGettingKing(killer);
+                NextTurn();
             }
         }
 
@@ -55,14 +59,10 @@ namespace UltimateChecker
             GameField.Grid[checker.CurrentCoord.Row][checker.CurrentCoord.Column] = checker;
         }
 
-        private void SaveState()
+        public void UndoStep(ICommand command)
         {
-            states.Push(GameField.SaveState());
-        }
-
-        public void UndoStep()
-        {
-            GameField.RestoreState(states.Pop());
+            GameField.RestoreState(states[command]);
+            states.Remove(command);
         }
 
         private void LogStep(Coord prevCoord, Coord newCoord, IChecker checker)
@@ -87,10 +87,32 @@ namespace UltimateChecker
             return GameField.StepsHistory;
         }
 
+        async private void NextTurn()
+        {
+            switch (GameField.Turn)
+            {
+                case PlayersSide.WHITE:
+                    states.Add(await WhitePlayer.MakeStep(GameField), GameField.SaveState());
+                    GameField.Turn = PlayersSide.BLACK;
+                    break;
+                case PlayersSide.BLACK:
+                    states.Add(await BlackPlayer.MakeStep(GameField),GameField.SaveState());
+                    GameField.Turn = PlayersSide.WHITE;
+                    break;
+            }
+
+        }
+
         public Game()
         {
             GameField = new GameField();
-            states = new Stack<FieldState>();
+            states = new Dictionary<ICommand, FieldState>();
+
+            //at first will be like that
+            WhitePlayer = new BotPlayer(this, PlayersSide.WHITE);
+            //BlackPlayer = new Player(this, PlayersSide.BLACK);
+
+            NextTurn();
         }
     }
 }
