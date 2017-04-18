@@ -8,53 +8,31 @@ namespace UltimateChecker
 {
     public class BlackNormalChecker : IBlackCheckerState
     {
-        public Coord CurrentCoord { get; set; }
-
-        public bool CheckPossibility(Coord coord, IGameField field)
+        public bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field)
         {
-            if (field.Grid[coord.Row][coord.Column] == null)
-            {
-                return CheckMove(coord);
-            }
-            else
-            {
-                if (field.Grid[coord.Row][coord.Column] is WhiteChecker)
-                {
-                   return CheckJump(coord);
-                }
-                else
-                {
-                    return false;
-                }
+            if (DestCoord.Row < 1 || DestCoord.Row > 8 || DestCoord.Column < 1 || DestCoord.Column > 8)
+                return false; //за пределы поля
+            if (field.Grid[DestCoord.Row][DestCoord.Column] != null)
+                return false; //там занято
 
-            }
-        }
+            int dRow = DestCoord.Row - CurrentCoord.Row;
+            int dColumn = DestCoord.Column - CurrentCoord.Column;
 
-        public bool CheckMove(Coord Coord)
-        {
-            if ((CurrentCoord.Row + 1 == Coord.Row) && (CurrentCoord.Column - 1 == Coord.Column))
+            if (Math.Abs(dRow) == 1 && Math.Abs(dColumn) == 1)//если лишь один шаг
             {
-                return true;
+                if (dRow == 1)
+                    return true;//черным только вниз
             }
-            if ((CurrentCoord.Row + 1 == Coord.Row) && (CurrentCoord.Column + 1 == Coord.Column))
-            {
-                return true;
-            }
-            return false;
-        }
 
-        public bool CheckJump(Coord Coord)
-        {
+            else if (Math.Abs(dRow) == 2 && Math.Abs(dColumn) == 2)//если хотим бить
             {
-                if ((CurrentCoord.Row - 2 == Coord.Row) && (CurrentCoord.Column - 2 == Coord.Column))
-                {
-                    return true;
-                }
-                if ((CurrentCoord.Row - 2 == Coord.Row) && (CurrentCoord.Column + 2 == Coord.Column))
+                IChecker neigbour = field.Grid[CurrentCoord.Row + dRow / 2][CurrentCoord.Column + dColumn / 2]; //ищем кого бить
+                if (neigbour != null && neigbour is WhiteChecker) //если там враг
                 {
                     return true;
                 }
             }
+
             return false;
         }
     }

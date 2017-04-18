@@ -24,9 +24,11 @@ namespace UltimateChecker
         Coord CurrentCoord { get; set; }
         ICheckerState CheckerState { get; set; }
         bool CheckPossibility(Coord coord, IGameField field);
+
     }
+
     public interface ICheckerState
     {
-        bool CheckPossibility(Coord coord, IGameField field);
+        bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field);
     }
 }

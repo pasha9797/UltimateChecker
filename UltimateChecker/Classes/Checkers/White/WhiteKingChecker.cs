@@ -8,65 +8,32 @@ namespace UltimateChecker
 {
    public class WhiteKingChecker:IWhiteCheckerState
     {
-        public Coord CurrentCoord { get; set; }
-
-        public bool CheckPossibility(Coord Coord, IGameField field)
+        public bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field) //ррррекурсия
         {
-            /* if(targetCell.IsEmpty)
-             * {
-             *     CheckMove();
-             * }
-             * else
-             * {
-             *      CheckJump();
-             * }
-            */
-            return false;
-        }
+            if (DestCoord.Row < 1 || DestCoord.Row > 8 || DestCoord.Column < 1 || DestCoord.Column > 8)
+                return false; //за пределы поля
+            if (field.Grid[DestCoord.Row][DestCoord.Column] != null)
+                return false; //там занято
 
-        public bool CheckMove(Coord Coord)
-        {
-            if ((CurrentCoord.Row - 1 == Coord.Row) && (CurrentCoord.Column - 1 == Coord.Column))
-            {
-                return true;
-            }
-            if ((CurrentCoord.Row - 1 == Coord.Row) && (CurrentCoord.Column + 1 == Coord.Column))
-            {
-                return true;
-            }
-            if ((CurrentCoord.Row + 1 == Coord.Row) && (CurrentCoord.Column - 1 == Coord.Column))
-            {
-                return true;
-            }
-            if ((CurrentCoord.Row + 1 == Coord.Row) && (CurrentCoord.Column + 1 == Coord.Column))
-            {
-                return true;
-            }
+            if (CurrentCoord.Row == DestCoord.Row && CurrentCoord.Column == DestCoord.Column)
+                return true; //выход из рекурсии
 
-            return false;
-        }
+            int dRow = DestCoord.Row - CurrentCoord.Row;
+            int dColumn = DestCoord.Column - CurrentCoord.Column;
 
-        public Coord CheckJump(Coord Coord)
-        {
+            if (Math.Abs(dRow) != Math.Abs(dColumn))
+                return false; //если ход не по диагонали
+
+            int sRow = dRow / Math.Abs(dRow); //определяем знак dRow
+            int sColumn = dColumn / Math.Abs(dColumn); //определяем знак dColumn
+
+            IChecker neigbour = field.Grid[CurrentCoord.Row + sRow / 2][CurrentCoord.Column + sColumn / 2]; //ищем кого бить
+            if (neigbour != null)
             {
-                if ((CurrentCoord.Row - 2 == Coord.Row) && (CurrentCoord.Column - 2 == Coord.Column))
-                {
-                    return new Coord(CurrentCoord.Row - 1, CurrentCoord.Column - 1);
-                }
-                if ((CurrentCoord.Row - 2 == Coord.Row) && (CurrentCoord.Column + 2 == Coord.Column))
-                {
-                    return new Coord(CurrentCoord.Row - 1, CurrentCoord.Column + 1);
-                }
-                if ((CurrentCoord.Row + 2 == Coord.Row) && (CurrentCoord.Column - 2 == Coord.Column))
-                {
-                    return new Coord(CurrentCoord.Row + 1, CurrentCoord.Column - 1);
-                }
-                if ((CurrentCoord.Row + 2 == Coord.Row) && (CurrentCoord.Column + 2 == Coord.Column))
-                {
-                    return new Coord(CurrentCoord.Row + 1, CurrentCoord.Column + 1);
-                }
+                if (neigbour is WhiteChecker)
+                    return false; //если на пути своя шашка
             }
-            return CurrentCoord;
+            return CheckPossibility(new Coord(CurrentCoord.Row + sRow, CurrentCoord.Column + sColumn), DestCoord, field); //вызываем рекурсивно для следующей клетки
         }
     }
 }

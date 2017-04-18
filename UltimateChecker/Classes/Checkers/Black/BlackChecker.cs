@@ -29,7 +29,7 @@ namespace UltimateChecker
         }
         public bool CheckPossibility(Coord coord, IGameField field)
         {
-            return CheckerState.CheckPossibility(coord, field);
+            return CheckerState.CheckPossibility(CurrentCoord, coord, field);
 
         }
 
