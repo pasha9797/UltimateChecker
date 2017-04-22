@@ -12,22 +12,24 @@ namespace UltimateChecker
         IGame resiver;
         IChecker killer;
         IChecker victim;
+        Coord destination;
 
-        public KillingCommand(IGame game, IChecker killer, IChecker victim)
+        public KillingCommand(IGame game, IChecker killer, IChecker victim, Coord destination)
         {
             resiver = game;
             this.killer = killer;
             this.victim = victim;
+            this.destination = destination;
         }
 
         public void Execute()
         {
-            resiver.ExecuteStep(killer, victim);
+            resiver.ExecuteStep(killer, victim, destination);
         }
 
-        public void Cansel(ICommand command)
+        public void Cansel()
         {
-            resiver.UndoStep(command);
+            //отмена команды
         }
 
         public string Name()
@@ -83,15 +85,17 @@ namespace UltimateChecker
                 case PlayersSide.WHITE:
                     foreach (var checker in gameField.WhiteCheckers)
                     {
-                        IChecker victim = CheckPossibilityToKill(checker);
-                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim), 10);
+                        Coord destination;
+                        IChecker victim = CheckPossibilityToKill(checker, out destination);
+                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
                     }
                     break;
                 case PlayersSide.BLACK:
                     foreach (var checker in gameField.BlackCheckers)
                     {
-                        IChecker victim = CheckPossibilityToKill(checker);
-                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim), 10);
+                        Coord destination;
+                        IChecker victim = CheckPossibilityToKill(checker, out destination);
+                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
                     }
                     break;
                 default:
@@ -99,12 +103,13 @@ namespace UltimateChecker
             }
         }
 
-        private IChecker CheckPossibilityToKill(IChecker checker)
+        private IChecker CheckPossibilityToKill(IChecker checker, out Coord destination)
         {
             IChecker[][] grid = gameField.Grid;
 
             int row = checker.CurrentCoord.Row;
             int column = checker.CurrentCoord.Column;
+            destination = default(Coord);
 
             try
             {
@@ -112,13 +117,15 @@ namespace UltimateChecker
                 {
                     for (int j = column - 1; j <= j + 1; j += 2)
                     {
-                        if ((i != row || j != column) && // исключая саму себя
-                            CheckGameFieldBorders(i, j) && // исключая выход за границы масиива
+                        if (CheckGameFieldBorders(i, j) && // исключая выход за границы масиива
                             grid[i][j] != null && // исключая пустые
-                            grid[i][j].side != checker.side) // исключая свои шашки
+                            CheckSides(checker, grid[i][j])) // исключая свои шашки
                         {
                             IChecker enemy = grid[i][j];
-                            return checker.CheckPossibilityToKill(enemy) ? enemy : null; // шашка проверяет возможность убийства врага
+                            bool isAbleToMove = false;
+                            destination = Destination(checker.CurrentCoord, grid[i][j].CurrentCoord,out isAbleToMove);
+                            if(isAbleToMove)
+                            return checker.CheckPossibility(checker.CurrentCoord, enemy.CurrentCoord, gameField) ? enemy : null; // шашка проверяет возможность убийства врага
                         }
                     }
                 }
@@ -127,10 +134,31 @@ namespace UltimateChecker
             return null; //нет возможности убийства
         }
 
+        private Coord Destination(Coord killerCoord, Coord victimCoord, out bool isAbleToMove)
+        {
+            int moveVertical;
+            int moveHorizontal;
+            Coord destination;
+            isAbleToMove = false;
+
+            moveVertical = (killerCoord.Row > victimCoord.Row)? -1: 1;
+            moveHorizontal = (killerCoord.Column > victimCoord.Column) ? -1 : 1;
+
+            destination = new Coord(victimCoord.Row + moveVertical, victimCoord.Column + moveHorizontal);
+
+            return (CheckGameFieldBorders(destination.Row, destination.Column)) ? destination : default(Coord);
+        }
+
+        private bool CheckSides(IChecker killer, IChecker victim)
+        {
+            return (killer is BlackChecker && victim is WhiteChecker) ||
+                   (killer is WhiteChecker && victim is BlackChecker);
+        }
+
         private bool CheckGameFieldBorders(int row, int colunmn)
         {
             double size = Math.Sqrt(gameField.Grid.Length);
-            return (row <= size && colunmn <= size);
+            return (row <= size && colunmn <= size && row >= 1 && colunmn >= 1);
         }
     }
 }
