@@ -8,7 +8,7 @@ namespace UltimateChecker
 {
     public class BlackNormalCheckerState : IBlackCheckerState
     {
-        public bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field)
+        public bool CheckPossibilityToMove(Coord CurrentCoord, Coord DestCoord, IGameField field)
         {
             if (DestCoord.Row < 1 || DestCoord.Row > 8 || DestCoord.Column < 1 || DestCoord.Column > 8)
                 return false; //за пределы поля
@@ -23,8 +23,20 @@ namespace UltimateChecker
                 if (dRow == 1)
                     return true;//черным только вниз
             }
+            return false;
+        }
 
-            else if (Math.Abs(dRow) == 2 && Math.Abs(dColumn) == 2)//если хотим бить
+        public bool CheckPossibilityToKill(Coord CurrentCoord, Coord DestCoord, IGameField field)
+        {
+            if (DestCoord.Row < 1 || DestCoord.Row > 8 || DestCoord.Column < 1 || DestCoord.Column > 8)
+                return false; //за пределы поля
+            if (field.Grid[DestCoord.Row][DestCoord.Column] != null)
+                return false; //там занято
+
+            int dRow = DestCoord.Row - CurrentCoord.Row;
+            int dColumn = DestCoord.Column - CurrentCoord.Column;
+
+            if (Math.Abs(dRow) == 2 && Math.Abs(dColumn) == 2)//если хотим бить
             {
                 IChecker neigbour = field.Grid[CurrentCoord.Row + dRow / 2][CurrentCoord.Column + dColumn / 2]; //ищем кого бить
                 if (neigbour != null && neigbour is WhiteChecker) //если там враг

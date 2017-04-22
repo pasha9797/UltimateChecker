@@ -27,12 +27,16 @@ namespace UltimateChecker
         {
             CheckerState = state;
         }
-        public bool CheckPossibility(Coord coord, IGameField field)
-        {
-            return CheckerState.CheckPossibility(CurrentCoord, coord, field);
 
+        public bool CheckPossibilityToMove(Coord coord, IGameField field)
+        {
+            return CheckerState.CheckPossibilityToMove(CurrentCoord, coord, field);
         }
 
+        public bool CheckPossibilityToKill(Coord coord, IGameField field)
+        {
+            return CheckerState.CheckPossibilityToKill(CurrentCoord, coord, field);
+        }
 
     }
 

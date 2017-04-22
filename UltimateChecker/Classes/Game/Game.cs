@@ -16,7 +16,7 @@ namespace UltimateChecker
 
         public void ExecuteStep(IChecker mover, Coord coord)
         {
-            if (mover.CheckPossibility(coord, GameField))
+            if (mover.CheckPossibilityToMove(coord, GameField))
             {
 
                 LogStep(mover.CurrentCoord, coord, mover);
@@ -28,7 +28,7 @@ namespace UltimateChecker
 
         public void ExecuteStep(IChecker killer, IChecker victim, Coord coord)
         {
-            if (killer.CheckPossibility(coord, GameField))
+            if (killer.CheckPossibilityToMove(coord, GameField))
             {
                 LogStepWithKill(killer.CurrentCoord, coord, killer, victim);
                 MoveCheckerDirectly(killer, coord);

@@ -23,12 +23,13 @@ namespace UltimateChecker
     {
         Coord CurrentCoord { get; set; }
         ICheckerState CheckerState { get; set; }
-        bool CheckPossibility(Coord coord, IGameField field);
-
+        bool CheckPossibilityToMove(Coord coord, IGameField field);
+        bool CheckPossibilityToKill(Coord coord, IGameField field);
     }
 
     public interface ICheckerState
     {
-        bool CheckPossibility(Coord CurrentCoord, Coord DestCoord, IGameField field);
+        bool CheckPossibilityToMove(Coord CurrentCoord, Coord DestCoord, IGameField field);
+        bool CheckPossibilityToKill(Coord CurrentCoord, Coord DestCoord, IGameField field);
     }
 }
