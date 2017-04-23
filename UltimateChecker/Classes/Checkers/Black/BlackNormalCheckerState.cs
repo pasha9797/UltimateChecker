@@ -47,5 +47,25 @@ namespace UltimateChecker
 
             return false;
         }
+
+        public Coord MoveForwardLeft(Coord CurrentCoord, int numberOfSteps)
+        {
+            return new Coord(CurrentCoord.Row + 1, CurrentCoord.Column + 1);
+        }
+
+        public Coord MoveForwardRight(Coord CurrentCoord, int numberOfSteps)
+        {
+            return new Coord(CurrentCoord.Row + 1, CurrentCoord.Column - 1);
+        }
+
+        public Coord MoveBackLeft(Coord CurrentCoord, int numberOfSteps)
+        {
+            return null;
+        }
+
+        public Coord MoveBackRight(Coord CurrentCoord, int numberOfSteps)
+        {
+            return null;
+        }
     }
 }

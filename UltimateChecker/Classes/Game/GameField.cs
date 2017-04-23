@@ -26,11 +26,11 @@ namespace UltimateChecker
                 return stepsHistory.ToArray();
             }
         }
-        public List<BlackChecker> BlackCheckers
+        public List<IChecker> BlackCheckers
         {
             get
             {
-                List<BlackChecker> blackList = new List<BlackChecker>();
+                List<IChecker> blackList = new List<IChecker>();
                 for (int i = 1; i <= 8; i++)
                 {
                     for (int j = 1; j <= 8; j++)
@@ -42,11 +42,11 @@ namespace UltimateChecker
                 return blackList;
             }
         }
-        public List<WhiteChecker> WhiteCheckers
+        public List<IChecker> WhiteCheckers
         {
             get
             {
-                List<WhiteChecker> whiteList = new List<WhiteChecker>();
+                List<IChecker> whiteList = new List<IChecker>();
                 for (int i = 1; i <= 8; i++)
                 {
                     for (int j = 1; j <= 8; j++)

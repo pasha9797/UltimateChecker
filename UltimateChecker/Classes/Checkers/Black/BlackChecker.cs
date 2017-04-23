@@ -38,6 +38,25 @@ namespace UltimateChecker
             return CheckerState.CheckPossibilityToKill(CurrentCoord, coord, field);
         }
 
+        public Coord MoveForwardLeft(int numberOfSteps)
+        {
+            return CheckerState.MoveForwardLeft(CurrentCoord, numberOfSteps);
+        }
+
+        public Coord MoveForwardRight(int numberOfSteps)
+        {
+            return CheckerState.MoveForwardRight(CurrentCoord, numberOfSteps);
+        }
+
+        public Coord MoveBackLeft(int numberOfSteps)
+        {
+            return (CheckerState is BlackKingCheckerState) ? CheckerState.MoveBackLeft(CurrentCoord, numberOfSteps) : null;
+        }
+
+        public Coord MoveBackRight(int numberOfSteps)
+        {
+            return (CheckerState is BlackKingCheckerState) ? CheckerState.MoveBackRight(CurrentCoord, numberOfSteps) : null;
+        }
     }
 
     public interface IBlackCheckerState : ICheckerState

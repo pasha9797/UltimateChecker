@@ -38,6 +38,34 @@ namespace UltimateChecker
         }
     }
 
+    class MovingCommand : ICommand
+    {
+        IGame resiver;
+        IChecker mover;
+        Coord destination;
+
+        public MovingCommand(IGame game, IChecker mover, Coord destination)
+        {
+            resiver = game;
+            this.mover = mover;
+            this.destination = destination;
+        }
+
+        public void Execute()
+        {
+            resiver.ExecuteStep(mover, destination);
+        }
+
+        public void Cansel()
+        {
+        }
+
+        public string Name()
+        {
+            return "Moving Command";
+        }
+    }
+
     public enum PlayersSide
     {
         WHITE,
@@ -50,7 +78,7 @@ namespace UltimateChecker
         IGameField gameField;
         ICommand turnCommand;
         PlayersSide side;
-        PriorityQueue<ICommand, int> commands;
+        PriorityQueue<ICommand, double> commands;
 
 
 
@@ -61,7 +89,7 @@ namespace UltimateChecker
 
         public async Task<ICommand> MakeStep(IGameField gameField)
         {
-            commands = new PriorityQueue<ICommand, int>();
+            commands = new PriorityQueue<ICommand, double>();
             this.gameField = gameField;
             return await MakeTurnTask();
         }
@@ -73,39 +101,37 @@ namespace UltimateChecker
 
         private ICommand MakeTurn()
         {
-            CheckAllChreckersForPossibilityToKil(side); //проверка на возможность убийства
+            CheckAllChreckersForPossibilityToKill(side); //проверка на возможность убийства
 
             return commands.Dequeue();//возврат самой приоритетной операции
         }
 
-        private void CheckAllChreckersForPossibilityToKil(PlayersSide side)
+        private void CheckAllChreckersForPossibilityToKill(PlayersSide side)
         {
-            switch (side)
+            List<IChecker> allies = GetAllies(side);
+
+            foreach (var checker in allies)
             {
-                case PlayersSide.WHITE:
-                    foreach (var checker in gameField.WhiteCheckers)
-                    {
-                        Coord destination;
-                        IChecker victim = CheckPossibilityToKill(checker, out destination);
-                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
-                    }
-                    break;
-                case PlayersSide.BLACK:
-                    foreach (var checker in gameField.BlackCheckers)
-                    {
-                        Coord destination;
-                        IChecker victim = CheckPossibilityToKill(checker, out destination);
-                        if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
-                    }
-                    break;
-                default:
-                    break;
+                Coord destination;
+                IChecker victim = CheckPossibilityToKill(checker, out destination);
+                if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
+            }
+        }
+
+        private void CheckAllCheckersForPossibilityToMove(PlayersSide side)
+        {
+            List<IChecker> allies = GetAllies(side);
+
+            foreach (var checker in allies)
+            {
+                CheckPossibilityToMove(side, checker);
             }
         }
 
         private IChecker CheckPossibilityToKill(IChecker checker, out Coord destination)
         {
             IChecker[][] grid = gameField.Grid;
+            List<IChecker> enemies = GetEnemies(side);
 
             int row = checker.CurrentCoord.Row;
             int column = checker.CurrentCoord.Column;
@@ -113,20 +139,12 @@ namespace UltimateChecker
 
             try
             {
-                for (int i = row - 1; i <= row + 1; i += 2)
+                foreach (IChecker enemy in enemies)
                 {
-                    for (int j = column - 1; j <= j + 1; j += 2)
+                    destination = Destination(checker.CurrentCoord, enemy.CurrentCoord);
+                    if (checker.CheckPossibilityToKill(destination, gameField))
                     {
-                        if (CheckGameFieldBorders(i, j) && // исключая выход за границы масиива
-                            grid[i][j] != null && // исключая пустые
-                            CheckSides(checker, grid[i][j])) // исключая свои шашки
-                        {
-                            IChecker enemy = grid[i][j];
-                            bool isAbleToMove = false;
-                            destination = Destination(checker.CurrentCoord, grid[i][j].CurrentCoord,out isAbleToMove);
-                            if(isAbleToMove)
-                            return checker.CheckPossibility(checker.CurrentCoord, enemy.CurrentCoord, gameField) ? enemy : null; // шашка проверяет возможность убийства врага
-                        }
+                        return enemy;
                     }
                 }
             }
@@ -134,19 +152,116 @@ namespace UltimateChecker
             return null; //нет возможности убийства
         }
 
-        private Coord Destination(Coord killerCoord, Coord victimCoord, out bool isAbleToMove)
+        private void CheckPossibilityToMove(PlayersSide side, IChecker checker)
+        {
+            // WARNING : ГОВНОКОД, тк не могу понять сразу является-ли шашка дамкой или нет. Приходится выяснять. Портит ООП пиздец.
+            switch (side)
+            {
+                case PlayersSide.WHITE:
+                    if(checker.CheckerState is WhiteNormalCheckerState)
+                    {
+                        double stepPriority = 1;
+                        stepPriority = MoveForwardLeft(checker, 1);
+                        if (stepPriority != 0)//если == 0 - ход невозможен
+                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardLeft(1)), stepPriority); // команда сдвига вперед-влево
+
+                        stepPriority = 1;
+                        stepPriority = MoveForwardRight(checker, 1);
+                        if (stepPriority != 0)//если == 0 - ход невозможен
+                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardRight(1)), stepPriority); // команда сдвига вперед-влево
+                    }
+                    else if(checker.CheckerState is WhiteKingCheckerState)
+                    {
+
+                    }
+                    break;
+                case PlayersSide.BLACK:
+                    if (checker.CheckerState is BlackNormalCheckerState)
+                    {
+                        double stepPriority = 1;
+                        stepPriority = MoveForwardLeft(checker, 1);
+                        if (stepPriority != 0)//если == 0 - ход невозможен
+                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardLeft(1)), stepPriority); // команда сдвига вперед-влево
+
+                        stepPriority = 1;
+                        stepPriority = MoveForwardRight(checker, 1);
+                        if (stepPriority != 0)//если == 0 - ход невозможен
+                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardRight(1)), stepPriority); // команда сдвига вперед-влево
+                    }
+                    else if (checker.CheckerState is WhiteKingCheckerState)
+                    {
+
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private double MoveForwardLeft(IChecker mover, int numberOfSteps)
+        {
+            double stepPriority = 0;
+            Coord destination = mover.MoveForwardLeft(numberOfSteps);
+            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
+            else stepPriority += CheckPossibilityToBeKilled(destination);
+            return stepPriority;
+        }
+
+        private double MoveForwardRight(IChecker mover, int numberOfSteps)
+        {
+            double stepPriority = 0;
+            Coord destination = mover.MoveForwardRight(numberOfSteps);
+            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
+            else stepPriority += CheckPossibilityToBeKilled(destination);
+            return stepPriority;
+        }
+
+        private double MoveBackLeft(IChecker mover, int numberOfSteps)
+        {
+            double stepPriority = 0;
+            Coord destination = mover.MoveBackLeft(numberOfSteps);
+            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
+            else stepPriority += CheckPossibilityToBeKilled(destination);
+            return stepPriority;
+        }
+
+        private double MoveBackRight(IChecker mover, int numberOfSteps)
+        {
+            double stepPriority = 0;
+            Coord destination = mover.MoveBackRight(numberOfSteps);
+            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
+            else stepPriority += CheckPossibilityToBeKilled(destination);
+            return stepPriority;
+        }
+
+        private double CheckPossibilityToBeKilled(Coord destination)
+        {
+            // допилить
+            return 1;
+        }
+
+        private List<IChecker> GetAllies(PlayersSide side)
+        {
+            return (side == PlayersSide.WHITE) ? gameField.WhiteCheckers : gameField.BlackCheckers;
+        }
+
+        private List<IChecker> GetEnemies(PlayersSide side)
+        {
+            return (side == PlayersSide.WHITE) ? gameField.BlackCheckers : gameField.WhiteCheckers;
+        }
+
+        private Coord Destination(Coord killerCoord, Coord victimCoord)
         {
             int moveVertical;
             int moveHorizontal;
             Coord destination;
-            isAbleToMove = false;
 
-            moveVertical = (killerCoord.Row > victimCoord.Row)? -1: 1;
+            moveVertical = (killerCoord.Row > victimCoord.Row) ? -1 : 1;
             moveHorizontal = (killerCoord.Column > victimCoord.Column) ? -1 : 1;
 
             destination = new Coord(victimCoord.Row + moveVertical, victimCoord.Column + moveHorizontal);
 
-            return (CheckGameFieldBorders(destination.Row, destination.Column)) ? destination : default(Coord);
+            return destination;
         }
 
         private bool CheckSides(IChecker killer, IChecker victim)
