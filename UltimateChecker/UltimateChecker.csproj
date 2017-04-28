@@ -37,6 +37,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -56,6 +58,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithms\PriorityQueue.cs" />
+    <Compile Include="Classes\Checkers\Black\BlackCheckerUI.xaml.cs">
+      <DependentUpon>BlackCheckerUI.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\Checkers\White\WhiteCheckerUI.xaml.cs">
+      <DependentUpon>WhiteCheckerUI.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Classes\Players\BotPlayer.cs" />
     <Compile Include="Classes\Checkers\CheckerFactory.cs" />
     <Compile Include="Classes\Game\FieldState.cs" />
@@ -65,7 +73,15 @@
     <Compile Include="Classes\Checkers\White\WhiteChecker.cs" />
     <Compile Include="Classes\Checkers\White\WhiteKingCheckerState.cs" />
     <Compile Include="Classes\Checkers\White\WhiteNormalCheckerState.cs" />
-    <Page Include="GameControlForm.xaml">
+    <Page Include="Classes\Checkers\Black\BlackCheckerUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Classes\Checkers\White\WhiteCheckerUI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="mainwindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -79,8 +95,8 @@
     <Compile Include="Interfaces\IGame.cs" />
     <Compile Include="Interfaces\IGameField.cs" />
     <Compile Include="Interfaces\IPlayer.cs" />
-    <Compile Include="GameControlForm.xaml.cs">
-      <DependentUpon>GameControlForm.xaml</DependentUpon>
+    <Compile Include="mainwindow.xaml.cs">
+      <DependentUpon>mainwindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

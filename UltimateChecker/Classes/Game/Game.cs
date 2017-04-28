@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace UltimateChecker
 {
@@ -103,16 +105,16 @@ namespace UltimateChecker
 
         }
 
-        public Game()
+        public Game(Grid formGrid)
         {
-            GameField = new GameField();
+            GameField = new GameField(formGrid);
             states = new Dictionary<ICommand, FieldState>();
 
             //at first will be like that
             WhitePlayer = new BotPlayer(this, PlayersSide.WHITE);
             //BlackPlayer = new Player(this, PlayersSide.BLACK);
 
-            NextTurn();
+            //NextTurn();
         }
     }
 }

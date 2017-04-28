@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace UltimateChecker
 {
@@ -21,11 +22,15 @@ namespace UltimateChecker
             }
         }
         public Coord CurrentCoord { get; set; }
+
+        public UserControl checkerUI { get; set; }
+
         private IBlackCheckerState checkerState;
 
-        public BlackChecker(IBlackCheckerState state)
+        public BlackChecker(IBlackCheckerState state, UserControl checkerUI)
         {
             CheckerState = state;
+            this.checkerUI = checkerUI;
         }
 
         public bool CheckPossibilityToMove(Coord coord, IGameField field)

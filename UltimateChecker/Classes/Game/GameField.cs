@@ -4,12 +4,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace UltimateChecker
 {
     class GameField : IGameField
     {
         private IChecker[][] grid;
+        private Grid formGrid;
         private List<String> stepsHistory;
 
         public IChecker[][] Grid
@@ -19,6 +22,19 @@ namespace UltimateChecker
                 return grid;
             }
         }
+
+        public Grid FormGrid
+        {
+            get
+            {
+                return formGrid;
+            }
+            set
+            {
+                formGrid = value;
+            }
+        }
+
         public string[] StepsHistory
         {
             get
@@ -81,8 +97,10 @@ namespace UltimateChecker
             stepsHistory.Add(log);
         }
 
-        public GameField()
+        public GameField(Grid formGrid)
         {
+            this.formGrid = formGrid;
+
             grid = new IChecker[9][];
             for (int i = 1; i <= 8; i++)
             {

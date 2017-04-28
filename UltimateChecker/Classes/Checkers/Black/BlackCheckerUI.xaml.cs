@@ -13,16 +13,21 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace UltimateChecker
+namespace UltimateChecker.Classes.Checkers.Black
 {
     /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
+    /// Interaction logic for BlackCheckerUI.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class BlackCheckerUI : UserControl
     {
-        public MainWindow()
+        int row;
+        int column;
+
+        public BlackCheckerUI(Coord coord)
         {
             InitializeComponent();
+            row = coord.Row;
+            column = coord.Column;
         }
     }
 }
