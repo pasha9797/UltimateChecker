@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="85" d:DesignWidth="85">
     <Grid>
-        <Ellipse Fill="#fff" HorizontalAlignment="Left" Height="85" Stroke="Black" VerticalAlignment="Top" Width="85"/>
+        <Ellipse Fill="#fff" HorizontalAlignment="Left" Height="85" Stroke="Black" VerticalAlignment="Top" Width="85" MouseDown="Ellipse_MouseDown" MouseMove="Ellipse_MouseMove" MouseUp="Ellipse_MouseUp"/>
 
     </Grid>
 </UserControl>

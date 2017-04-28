@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace UltimateChecker
 {
@@ -31,5 +32,7 @@ namespace UltimateChecker
             }
             return Copy;
         }
+       
+        public static UserControl DraggingChecker { get; set; }
     }
 }

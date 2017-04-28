@@ -22,12 +22,53 @@ namespace UltimateChecker.Classes.Checkers.Black
     {
         int row;
         int column;
+        Point anchorPoint;
+        Point currentPoint;
+        private TranslateTransform transform = new TranslateTransform();
+        bool isInDrag = false;
+
+        public delegate void MoveCheckerDel(Coord destination);
+        public event MoveCheckerDel MoveCheckerEvent;
 
         public BlackCheckerUI(Coord coord)
         {
             InitializeComponent();
             row = coord.Row;
             column = coord.Column;
+        }
+
+        private void Ellipse_MouseDown(object sender, MouseEventArgs e)
+        {
+            var element = sender as FrameworkElement;
+            anchorPoint = e.GetPosition(null);
+            element.CaptureMouse();
+            isInDrag = true;
+            e.Handled = true;
+        }
+
+        private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (isInDrag)
+            {
+                var element = sender as FrameworkElement;
+                element.ReleaseMouseCapture();
+                isInDrag = false;
+                e.Handled = true;
+            }
+        }
+
+        private void Ellipse_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isInDrag)
+            {
+                var element = sender as FrameworkElement;
+                currentPoint = e.GetPosition(null);
+
+                transform.X += currentPoint.X - anchorPoint.X;
+                transform.Y += currentPoint.Y - anchorPoint.Y;
+                this.RenderTransform = transform;
+                anchorPoint = currentPoint;
+            }
         }
     }
 }

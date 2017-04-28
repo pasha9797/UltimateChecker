@@ -90,6 +90,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classes\Checkers\Black\BlackChecker.cs" />
+    <Compile Include="Classes\Players\Player.cs" />
     <Compile Include="Interfaces\IChecker.cs" />
     <Compile Include="Interfaces\ICommand.cs" />
     <Compile Include="Interfaces\IGame.cs" />

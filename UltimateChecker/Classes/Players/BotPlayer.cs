@@ -29,7 +29,7 @@ namespace UltimateChecker
 
         public void Cansel()
         {
-            //отмена команды
+            resiver.UndoStep(this);
         }
 
         public string Name()
@@ -58,6 +58,7 @@ namespace UltimateChecker
 
         public void Cansel()
         {
+            resiver.UndoStep(this);
         }
 
         public string Name()
