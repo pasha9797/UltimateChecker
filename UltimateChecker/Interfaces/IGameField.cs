@@ -12,6 +12,7 @@ namespace UltimateChecker
     {
         IChecker[][] Grid { get; }
         Grid FormGrid { get; set; }
+        MainWindow MainWindow { get; set; }
         FieldState SaveState();
         void RestoreState(FieldState state);
         void StepsHistoryAdd(string log);

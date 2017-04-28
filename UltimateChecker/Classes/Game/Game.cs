@@ -105,9 +105,9 @@ namespace UltimateChecker
 
         }
 
-        public Game(Grid formGrid)
+        public Game(MainWindow mainWindow)
         {
-            GameField = new GameField(formGrid);
+            GameField = new GameField(mainWindow);
             states = new Dictionary<ICommand, FieldState>();
 
             //at first will be like that

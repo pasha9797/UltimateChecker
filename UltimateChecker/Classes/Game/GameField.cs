@@ -14,6 +14,7 @@ namespace UltimateChecker
         private IChecker[][] grid;
         private Grid formGrid;
         private List<String> stepsHistory;
+        public MainWindow mainWindow;
 
         public IChecker[][] Grid
         {
@@ -76,6 +77,19 @@ namespace UltimateChecker
         }
         public PlayersSide Turn { get; set; }
 
+        public MainWindow MainWindow
+        {
+            get
+            {
+                return mainWindow;
+            }
+
+            set
+            {
+                mainWindow = value;
+            }
+        }
+
         public FieldState SaveState() //реализация хранителя | Сохранение
         {
             return new FieldState(
@@ -97,9 +111,10 @@ namespace UltimateChecker
             stepsHistory.Add(log);
         }
 
-        public GameField(Grid formGrid)
+        public GameField(MainWindow mainWindow)
         {
-            this.formGrid = formGrid;
+            this.mainWindow = mainWindow;
+            this.formGrid = mainWindow.grid;
 
             grid = new IChecker[9][];
             for (int i = 1; i <= 8; i++)

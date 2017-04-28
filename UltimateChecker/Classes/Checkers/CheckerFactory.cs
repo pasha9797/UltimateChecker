@@ -31,6 +31,8 @@ namespace UltimateChecker
             Grid.SetColumn(white.checkerUI, coord.Column - 1);
             Grid.SetRow(white.checkerUI, coord.Row - 1);
             gameField.FormGrid.Children.Add(white.checkerUI);
+            WhiteCheckerUI checkerUI = white.checkerUI as WhiteCheckerUI;
+            checkerUI.MovingToAnotherCell += gameField.MainWindow.TryToMoveCheckerToAnotherCell;
             return white;
         }
     }
