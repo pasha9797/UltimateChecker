@@ -6,80 +6,34 @@ using System.Threading.Tasks;
 
 namespace UltimateChecker.Classes.Players
 {
-    class KillingCommand : ICommand
-    {
-        IGame resiver;
-        IChecker killer;
-        IChecker victim;
-        Coord destination;
-
-        public KillingCommand(IGame game, IChecker killer, IChecker victim, Coord destination)
-        {
-            resiver = game;
-            this.killer = killer;
-            this.victim = victim;
-            this.destination = destination;
-        }
-
-        public void Execute()
-        {
-            resiver.ExecuteStep(killer, victim, destination);
-        }
-
-        public void Cansel()
-        {
-            resiver.UndoStep(this);
-        }
-
-        public string Name()
-        {
-            return "Killing Command";
-        }
-    }
-
-    class MovingCommand : ICommand
-    {
-        IGame resiver;
-        IChecker mover;
-        Coord destination;
-
-        public MovingCommand(IGame game, IChecker mover, Coord destination)
-        {
-            resiver = game;
-            this.mover = mover;
-            this.destination = destination;
-        }
-
-        public void Execute()
-        {
-            resiver.ExecuteStep(mover, destination);
-        }
-
-        public void Cansel()
-        {
-            resiver.UndoStep(this);
-        }
-
-        public string Name()
-        {
-            return "Moving Command";
-        }
-    }
-
-    public enum PlayersSide
-    {
-        WHITE,
-        BLACK
-    }
-
-    
-
     class Player : IPlayer
     {
+        IGame game;
+        ICommand turnCommand;
+        PlayersSide side;
 
-        public Task<ICommand> MakeStep(IGameField grid)
+        public Player(IGame game, PlayersSide side)
         {
-            return null;
+            this.side = side;
+        }
+
+        public async Task<ICommand> MakeStep(IGameField grid)
+        {
+            return await MakeTurnTask();
+        }
+
+        Task<ICommand> MakeTurnTask()
+        {
+            return Task<ICommand>.Run<ICommand>(new Func<ICommand>(MakeTurn));
+        }
+
+        private ICommand MakeTurn()
+        {
+            return null;           
+        }
+
+        public void RecieveCommandFromForm(IChecker checker, Coord currentCoord, Coord destination)
+        { 
         }
     }
 }

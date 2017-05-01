@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using UltimateChecker.Classes.Players;
+using UltimateChecker.Classes.Checkers.White;
 
 namespace UltimateChecker
 {
@@ -13,6 +15,7 @@ namespace UltimateChecker
         public IGameField GameField { get; }
         public IPlayer WhitePlayer { get; }
         public IPlayer BlackPlayer { get; }
+        MainWindow mainWindow;
 
         private Dictionary<ICommand,FieldState> states { get; }
 
@@ -94,10 +97,12 @@ namespace UltimateChecker
             switch (GameField.Turn)
             {
                 case PlayersSide.WHITE:
-                    states.Add(await WhitePlayer.MakeStep(GameField), GameField.SaveState());
+                    UnblockGrid();
+                    //states.Add(await WhitePlayer.MakeStep(GameField), GameField.SaveState());
                     GameField.Turn = PlayersSide.BLACK;
                     break;
                 case PlayersSide.BLACK:
+                    BlockGrid();
                     states.Add(await BlackPlayer.MakeStep(GameField),GameField.SaveState());
                     GameField.Turn = PlayersSide.WHITE;
                     break;
@@ -107,14 +112,38 @@ namespace UltimateChecker
 
         public Game(MainWindow mainWindow)
         {
+            this.mainWindow = mainWindow;
             GameField = new GameField(mainWindow);
             states = new Dictionary<ICommand, FieldState>();
 
-            //at first will be like that
-            WhitePlayer = new BotPlayer(this, PlayersSide.WHITE);
-            //BlackPlayer = new Player(this, PlayersSide.BLACK);
+            BlackPlayer = new BotPlayer(this, PlayersSide.BLACK);
+            WhitePlayer = new Player(this, PlayersSide.WHITE);
+            (this.GameField as GameField).SendCommandToPlayerEvent += (WhitePlayer as Player).RecieveCommandFromForm; // какой-то пиздец, а не код, но мне похуй
+            NextTurn();
+        }
 
-            //NextTurn();
+        public void AcceptCheckerMovementFromForm(Coord newCoord, IChecker movingChecker)
+        {
+
+        }
+
+        private void BlockGrid()
+        {
+            foreach (WhiteChecker checker in GameField.WhiteCheckers)
+            {
+                WhiteCheckerUI checkUI = checker.checkerUI as WhiteCheckerUI;
+                checkUI.druggingIsPermitted = false;
+            }
+        }
+
+
+        private void UnblockGrid()
+        {
+            foreach (WhiteChecker checker in GameField.WhiteCheckers)
+            {
+                WhiteCheckerUI checkUI = checker.checkerUI as WhiteCheckerUI;
+                checkUI.druggingIsPermitted = true;
+            }
         }
     }
 }

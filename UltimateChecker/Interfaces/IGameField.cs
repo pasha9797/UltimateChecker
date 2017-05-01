@@ -16,6 +16,7 @@ namespace UltimateChecker
         FieldState SaveState();
         void RestoreState(FieldState state);
         void StepsHistoryAdd(string log);
+        bool CheckCheckersMovement(Coord newCoord, IChecker checker);
         string[] StepsHistory { get; }
         List<IChecker> WhiteCheckers { get; }
         List<IChecker> BlackCheckers { get; }

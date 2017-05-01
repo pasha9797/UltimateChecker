@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using UltimateChecker.Classes.Game;
 
 namespace UltimateChecker
 {
@@ -77,6 +78,9 @@ namespace UltimateChecker
         }
         public PlayersSide Turn { get; set; }
 
+        public delegate void SendCommandToPlayerDel(IChecker checker, Coord currentCoord, Coord destination);
+        public event SendCommandToPlayerDel SendCommandToPlayerEvent;
+
         public MainWindow MainWindow
         {
             get
@@ -109,6 +113,19 @@ namespace UltimateChecker
         public void StepsHistoryAdd(string log)
         {
             stepsHistory.Add(log);
+        }
+
+        public bool CheckCheckersMovement(Coord newCoord, IChecker checker)
+        {
+            bool result = false;
+            ICommand commandToPlayer = null;
+
+            if(checker.CheckPossibilityToMove(newCoord, this) || checker.CheckPossibilityToKill(newCoord, this))
+            {
+                result = true;
+                SendCommandToPlayerEvent(checker, checker.CurrentCoord, newCoord);
+            }
+            return result;
         }
 
         public GameField(MainWindow mainWindow)

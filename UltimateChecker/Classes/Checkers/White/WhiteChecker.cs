@@ -9,6 +9,9 @@ namespace UltimateChecker
 {
     public class WhiteChecker:IChecker
     {
+        public delegate bool CoordChangedDel(Coord newCoord, IChecker instance);
+        public event CoordChangedDel CoordChanged;
+
         public ICheckerState CheckerState
         {
             get
@@ -22,6 +25,8 @@ namespace UltimateChecker
             }
         }
         public Coord CurrentCoord { get; set; }
+
+        public Coord newCoord { get; set; } //новые непроверенные координаты после перемещения
 
         public UserControl checkerUI { get; set; }
 
@@ -61,6 +66,14 @@ namespace UltimateChecker
         public Coord MoveBackRight(int numberOfSteps)
         {
             return (CheckerState is WhiteKingCheckerState) ? CheckerState.MoveBackRight(CurrentCoord, numberOfSteps) : null;
+        }
+
+        public bool CoordChangedFromForm(Coord newCoord)
+        {
+            this.newCoord = newCoord;
+            bool result = CoordChanged(newCoord, this); //проверка координат, присваивание, если перемещение возможно
+            if (result) CurrentCoord = newCoord;
+            return result; 
         }
     }
 

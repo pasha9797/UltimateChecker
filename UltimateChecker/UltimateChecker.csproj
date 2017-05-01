@@ -64,6 +64,8 @@
     <Compile Include="Classes\Checkers\White\WhiteCheckerUI.xaml.cs">
       <DependentUpon>WhiteCheckerUI.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Classes\Game\KillingCommand.cs" />
+    <Compile Include="Classes\Game\MovingCommand.cs" />
     <Compile Include="Classes\Players\BotPlayer.cs" />
     <Compile Include="Classes\Checkers\CheckerFactory.cs" />
     <Compile Include="Classes\Game\FieldState.cs" />

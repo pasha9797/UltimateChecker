@@ -26,13 +26,17 @@ namespace UltimateChecker
         {
             
             WhiteChecker white = new WhiteChecker(new WhiteNormalCheckerState(), new WhiteCheckerUI(coord));
+
+            WhiteCheckerUI checkerUI = white.checkerUI as WhiteCheckerUI;//событие изменения координаты
+            checkerUI.CoordChangedFromForm += white.CoordChangedFromForm;
+            white.CoordChanged += gameField.CheckCheckersMovement;
             white.CurrentCoord = coord;
             gameField.Grid[coord.Row][coord.Column] = white;
             Grid.SetColumn(white.checkerUI, coord.Column - 1);
             Grid.SetRow(white.checkerUI, coord.Row - 1);
             gameField.FormGrid.Children.Add(white.checkerUI);
-            WhiteCheckerUI checkerUI = white.checkerUI as WhiteCheckerUI;
-            checkerUI.MovingToAnotherCell += gameField.MainWindow.TryToMoveCheckerToAnotherCell;
+            checkerUI.TryingToMoveToAnotherCell += gameField.MainWindow.TryToMoveCheckerToAnotherCell;
+            checkerUI.MovingToAnotherCell += gameField.MainWindow.MoveCheckerToAnotherCell;
             return white;
         }
     }
