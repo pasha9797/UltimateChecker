@@ -23,14 +23,18 @@ namespace UltimateChecker
 
         public static T CreateCopy<T>(T aobject)
         {
-            MethodInfo memberwiseClone = aobject.GetType().GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
-            T Copy = (T)memberwiseClone.Invoke(aobject, null);
-            foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            if (aobject != null)
             {
-                object original = f.GetValue(aobject);
-                f.SetValue(Copy, CreateCopy(original));
+                MethodInfo memberwiseClone = aobject.GetType().GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
+                T Copy = (T)memberwiseClone.Invoke(aobject, null);
+                foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    object original = f.GetValue(aobject);
+                    f.SetValue(Copy, CreateCopy(original));
+                }
+                return Copy;
             }
-            return Copy;
+            else return default(T);
         }
        
         public static UserControl DraggingChecker { get; set; }

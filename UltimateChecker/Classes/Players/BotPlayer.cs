@@ -153,6 +153,11 @@ namespace UltimateChecker
             return null; //нет возможности убийства
         }
 
+        public void StepFinished(Coord coord, IChecker mover,  IChecker victim)
+        {
+        }
+
+
         private void CheckPossibilityToMove(PlayersSide side, IChecker checker)
         {
             // WARNING : ГОВНОКОД, тк не могу понять сразу является-ли шашка дамкой или нет. Приходится выяснять. Портит ООП пиздец.

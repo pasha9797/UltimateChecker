@@ -37,6 +37,7 @@ namespace UltimateChecker
             gameField.FormGrid.Children.Add(white.checkerUI);
             checkerUI.TryingToMoveToAnotherCell += gameField.MainWindow.TryToMoveCheckerToAnotherCell;
             checkerUI.MovingToAnotherCell += gameField.MainWindow.MoveCheckerToAnotherCell;
+            checkerUI.ConnectedChecker = white;
             return white;
         }
     }

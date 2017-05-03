@@ -72,7 +72,6 @@ namespace UltimateChecker
         {
             this.newCoord = newCoord;
             bool result = CoordChanged(newCoord, this); //проверка координат, присваивание, если перемещение возможно
-            if (result) CurrentCoord = newCoord;
             return result; 
         }
     }

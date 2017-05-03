@@ -26,6 +26,7 @@ namespace UltimateChecker.Classes.Checkers.Black
         Point currentPoint;
         private TranslateTransform transform = new TranslateTransform();
         bool isInDrag = false;
+        public IPlayer Player = null;
 
         public delegate void MoveCheckerDel(Coord destination);
         public event MoveCheckerDel MoveCheckerEvent;

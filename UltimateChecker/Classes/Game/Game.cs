@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using UltimateChecker.Classes.Players;
 using UltimateChecker.Classes.Checkers.White;
+using UltimateChecker.Classes.Checkers.Black;
 
 namespace UltimateChecker
 {
@@ -94,17 +95,25 @@ namespace UltimateChecker
 
         async private void NextTurn()
         {
+            ICommand command;
+            FieldState state;
             switch (GameField.Turn)
             {
                 case PlayersSide.WHITE:
                     UnblockGrid();
-                    //states.Add(await WhitePlayer.MakeStep(GameField), GameField.SaveState());
-                    GameField.Turn = PlayersSide.BLACK;
+                    command = await WhitePlayer.MakeStep(GameField);
+                    state = GameField.SaveState();
+                    states.Add(command, state);
+                    //GameField.Turn = PlayersSide.BLACK;
+                    command.Execute();
                     break;
                 case PlayersSide.BLACK:
                     BlockGrid();
-                    states.Add(await BlackPlayer.MakeStep(GameField),GameField.SaveState());
+                    command = await BlackPlayer.MakeStep(GameField);
+                    state = GameField.SaveState();
+                    states.Add(command, state);
                     GameField.Turn = PlayersSide.WHITE;
+                    command.Execute();
                     break;
             }
 
@@ -118,8 +127,25 @@ namespace UltimateChecker
 
             BlackPlayer = new BotPlayer(this, PlayersSide.BLACK);
             WhitePlayer = new Player(this, PlayersSide.WHITE);
+
+            InitializePlayersForCheckers();
+
             (this.GameField as GameField).SendCommandToPlayerEvent += (WhitePlayer as Player).RecieveCommandFromForm; // какой-то пиздец, а не код, но мне похуй
             NextTurn();
+        }
+
+        private void InitializePlayersForCheckers()
+        {
+            foreach(IChecker checker in GameField.BlackCheckers)
+            {
+                BlackCheckerUI checkerUI = checker.checkerUI as BlackCheckerUI;
+                checkerUI.Player = BlackPlayer;
+            }
+            foreach (IChecker checker in GameField.WhiteCheckers)
+            {
+                WhiteCheckerUI checkerUI = checker.checkerUI as WhiteCheckerUI;
+                checkerUI.Player = WhitePlayer;
+            }
         }
 
         public void AcceptCheckerMovementFromForm(Coord newCoord, IChecker movingChecker)
