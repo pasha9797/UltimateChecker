@@ -48,6 +48,11 @@ namespace UltimateChecker
             return CheckerState.CheckPossibilityToKill(CurrentCoord, coord, field);
         }
 
+        public IChecker GetVictim(Coord coord, IGameField field)
+        {
+            return CheckerState.GetVictim(CurrentCoord, coord, field);
+        }
+
         public Coord MoveForwardLeft(int numberOfSteps)
         {
             return CheckerState.MoveForwardLeft(CurrentCoord, numberOfSteps);

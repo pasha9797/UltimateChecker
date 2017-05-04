@@ -28,6 +28,8 @@ namespace UltimateChecker
         ICheckerState CheckerState { get; set; }
         bool CheckPossibilityToMove(Coord coord, IGameField field);
         bool CheckPossibilityToKill(Coord coord, IGameField field);
+
+        IChecker GetVictim(Coord coord, IGameField field);
         
         Coord MoveForwardLeft(int numberOfSteps);
         Coord MoveForwardRight(int numberOfSteps);
@@ -39,6 +41,7 @@ namespace UltimateChecker
     {
         bool CheckPossibilityToMove(Coord CurrentCoord, Coord DestCoord, IGameField field);
         bool CheckPossibilityToKill(Coord CurrentCoord, Coord DestCoord, IGameField field);
+        IChecker GetVictim(Coord CurrentCoord, Coord DestCoord, IGameField field);
         Coord MoveForwardLeft(Coord CurrentCoord, int numberOfSteps);
         Coord MoveForwardRight(Coord CurrentCoord, int numberOfSteps);
         Coord MoveBackLeft(Coord CurrentCoord, int numberOfSteps);

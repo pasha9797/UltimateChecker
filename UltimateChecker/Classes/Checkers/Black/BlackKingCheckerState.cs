@@ -27,7 +27,7 @@ namespace UltimateChecker
             int sRow = dRow / Math.Abs(dRow); //определяем знак dRow
             int sColumn = dColumn / Math.Abs(dColumn); //определяем знак dColumn
 
-            IChecker neigbour = field.Grid[CurrentCoord.Row + sRow / 2][CurrentCoord.Column + sColumn / 2]; //ищем кого бить
+            IChecker neigbour = field.Grid[CurrentCoord.Row + sRow][CurrentCoord.Column + sColumn]; //ищем кого бить
             if (neigbour != null)
             {
                 return false; //если на пути шашка
@@ -68,6 +68,45 @@ namespace UltimateChecker
             if (countFriend == 0 && countEnemy == 1)
                 return true;
             else return false;
+        }
+
+        public IChecker GetVictim(Coord CurrentCoord, Coord DestCoord, IGameField field)
+        {
+            if (DestCoord.Row < 1 || DestCoord.Row > 8 || DestCoord.Column < 1 || DestCoord.Column > 8)
+                return null; //за пределы поля
+            if (field.Grid[DestCoord.Row][DestCoord.Column] != null)
+                return null; //там занято
+
+            int dRow = DestCoord.Row - CurrentCoord.Row;
+            int dColumn = DestCoord.Column - CurrentCoord.Column;
+
+            if (Math.Abs(dRow) != Math.Abs(dColumn))
+                return null; //если ход не по диагонали
+
+            int sRow = dRow / Math.Abs(dRow); //определяем знак dRow
+            int sColumn = dColumn / Math.Abs(dColumn); //определяем знак dColumn
+
+            int row = CurrentCoord.Row;
+            int col = CurrentCoord.Column;
+            int countFriend = 0;
+            int countEnemy = 0;
+            IChecker victim = null;
+            while (row != DestCoord.Row || col != DestCoord.Column)
+            {
+                row += sRow;
+                col += sColumn;
+                if (field.Grid[row][col] is BlackChecker)
+                    countFriend++;
+                else if (field.Grid[row][col] is WhiteChecker)
+                {
+                    countEnemy++;
+                    victim = field.Grid[row][col];
+                }
+            }
+
+            if (countFriend == 0 && countEnemy == 1)
+                return victim;
+            else return null;
         }
 
         public Coord MoveForwardLeft(Coord CurrentCoord, int numberOfSteps)

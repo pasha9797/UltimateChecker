@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using UltimateChecker.Classes.Game;
 
 namespace UltimateChecker
 {
@@ -120,12 +119,17 @@ namespace UltimateChecker
             bool result = false;
             ICommand commandToPlayer = null;
 
-            if(checker.CheckPossibilityToMove(newCoord, this) || checker.CheckPossibilityToKill(newCoord, this))
+            if (checker.CheckPossibilityToMove(newCoord, this) || checker.CheckPossibilityToKill(newCoord, this))
             {
                 result = true;
                 SendCommandToPlayerEvent(checker, checker.CurrentCoord, newCoord);
             }
             return result;
+        }
+
+        public IChecker GetVictim(Coord newCoord, IChecker checker)
+        {
+            return checker.GetVictim(newCoord, this);
         }
 
         public GameField(MainWindow mainWindow)
@@ -157,6 +161,7 @@ namespace UltimateChecker
                     CheckerFactory.CreateWhite(new Coord(8, i), this);
                 }
             }
+            CheckerFactory.CreateBlack(new Coord(5, 2), this);
         }
     }
 }

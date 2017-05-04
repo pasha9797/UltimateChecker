@@ -38,6 +38,7 @@ namespace UltimateChecker
             checkerUI.TryingToMoveToAnotherCell += gameField.MainWindow.TryToMoveCheckerToAnotherCell;
             checkerUI.MovingToAnotherCell += gameField.MainWindow.MoveCheckerToAnotherCell;
             checkerUI.ConnectedChecker = white;
+            checkerUI.GetVictim += gameField.GetVictim;
             return white;
         }
     }

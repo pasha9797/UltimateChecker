@@ -41,6 +41,9 @@ namespace UltimateChecker.Classes.Checkers.White
         public delegate bool CoordChangedFromFormDel(Coord newCoord);
         public event CoordChangedFromFormDel CoordChangedFromForm;
 
+        public delegate IChecker GetVictimDel(Coord newCoord, IChecker checker);
+        public event GetVictimDel GetVictim;
+
         public WhiteChecker ConnectedChecker;
 
         public WhiteCheckerUI(Coord coord)
@@ -102,7 +105,7 @@ namespace UltimateChecker.Classes.Checkers.White
                 row = newCoord.Row;
                 column = newCoord.Column;
                 MovingToAnotherCell(this, newCoord);
-                Player.StepFinished(newCoord, ConnectedChecker, null); //victim - null означает что ход без убийства, я хз как запилить с убийством, тут ничего не понятно
+                Player.StepFinished(newCoord, ConnectedChecker, GetVictim(newCoord, ConnectedChecker)); 
             }
             else
             {

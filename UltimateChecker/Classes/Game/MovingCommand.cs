@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UltimateChecker.Classes.Game
+namespace UltimateChecker
 {
     class MovingCommand : ICommand
     {

@@ -25,21 +25,21 @@ namespace UltimateChecker.Classes.Players
 
         public async Task<ICommand> MakeStep(IGameField grid)
         {
-            return await MakeTurnTask();
-        }
-
-        Task<ICommand> MakeTurnTask()
-        {
-            return Task<ICommand>.Run<ICommand>(new Func<ICommand>(MakeTurn));
+            return await Task<ICommand>.Run<ICommand>(new Func<ICommand>(MakeTurn));
         }
 
         private ICommand MakeTurn()
         {
             WaitingForStep = true;
             while (WaitingForStep) ;
-            if (victim == null)
+            if (IsVictim())
+            {
+                return new KillingCommand(game, mover, victim, dest);
+            }
+            else
+            {
                 return new MovingCommand(game, mover, dest);
-            else return new KillingCommand(game, mover, victim, dest);
+            }
         }
 
         public void StepFinished(Coord coord, IChecker mover, IChecker victim)
@@ -48,6 +48,11 @@ namespace UltimateChecker.Classes.Players
             dest = coord;
             this.mover = mover;
             this.victim = victim;
+        }
+
+        private bool IsVictim()
+        {
+            return victim != null;
         }
 
         public void RecieveCommandFromForm(IChecker checker, Coord currentCoord, Coord destination)

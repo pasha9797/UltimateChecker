@@ -18,7 +18,7 @@ namespace UltimateChecker
         public IPlayer BlackPlayer { get; }
         MainWindow mainWindow;
 
-        private Dictionary<ICommand,FieldState> states { get; }
+        private Dictionary<ICommand, FieldState> states { get; }
 
         public void ExecuteStep(IChecker mover, Coord coord)
         {
@@ -34,14 +34,20 @@ namespace UltimateChecker
 
         public void ExecuteStep(IChecker killer, IChecker victim, Coord coord)
         {
-            if (killer.CheckPossibilityToMove(coord, GameField))
+            if (killer.CheckPossibilityToKill(coord, GameField))
             {
                 LogStepWithKill(killer.CurrentCoord, coord, killer, victim);
                 MoveCheckerDirectly(killer, coord);
-                GameField.Grid[victim.CurrentCoord.Row][victim.CurrentCoord.Column] = null;
+                Kill(victim);
                 CheckGettingKing(killer);
                 NextTurn();
             }
+        }
+
+        private void Kill(IChecker victim)
+        {
+            GameField.Grid[victim.CurrentCoord.Row][victim.CurrentCoord.Column] = null;
+            GameField.FormGrid.Children.Remove(victim.checkerUI);
         }
 
         private void CheckGettingKing(IChecker checker)
