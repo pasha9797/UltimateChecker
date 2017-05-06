@@ -181,7 +181,7 @@ namespace UltimateChecker
             
             //CheckerFactory.CreateBlack(new Coord(5, 2), this);
             //CheckerFactory.CreateBlack(new Coord(4, 3), this);
-            //IChecker checker = CheckerFactory.CreateWhite(new Coord(3, 3), this);
+            //IChecker checker = CheckerFactory.CreateWhite(new Coord(2, 3), this);
             //checker.BecomeKing();
         }
     }

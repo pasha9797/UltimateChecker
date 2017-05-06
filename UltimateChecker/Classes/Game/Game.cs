@@ -38,6 +38,7 @@ namespace UltimateChecker
                 LogStepWithKill(killer.CurrentCoord, coord, killer, victim);
                 MoveCheckerDirectly(killer, coord);
                 Kill(victim);
+                CheckGameOver();
                 CheckGettingKing(killer);
                 SwitchTurn(killer);
                 NextTurn();
