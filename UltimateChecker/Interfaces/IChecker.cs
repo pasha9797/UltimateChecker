@@ -23,9 +23,10 @@ namespace UltimateChecker
     public interface IChecker
     {
         Coord CurrentCoord { get; set; }
-        UserControl checkerUI { get; set; }
-        
+        UserControl checkerUI { get; set; }        
         ICheckerState CheckerState { get; set; }
+        bool IsKing { get; }
+
         bool CheckPossibilityToMove(Coord coord, IGameField field);
         bool CheckPossibilityToKill(Coord coord, IGameField field);
         bool CheckAllPossibilitiesToKill(IGameField filed);
@@ -35,6 +36,7 @@ namespace UltimateChecker
         IChecker GetVictim(Coord coord, IGameField field);
         bool CoordChangedFromForm(Coord newCoord);
         void BecomeKing();
+        void BecomeNormal();
 
 
         Coord MoveForwardLeft(int numberOfSteps);

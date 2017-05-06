@@ -55,11 +55,13 @@ namespace UltimateChecker
             {
                 Ellipse.Fill = Brushes.Black;
                 Ellipse.Stroke = Brushes.Gray;
+                Ellipse.StrokeThickness = 2;
             }
             else
             {
                 Ellipse.Fill = Brushes.White;
                 Ellipse.Stroke = Brushes.Black;
+                Ellipse.StrokeThickness = 2;
             }
         }
 
@@ -67,6 +69,11 @@ namespace UltimateChecker
         {
             Ellipse.Stroke = Brushes.Red;
             Ellipse.StrokeThickness = 4;
+        }
+
+        public void BecomeNormal()
+        {
+            AssignConnectedChecker(ConnectedChecker);
         }
 
         private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)

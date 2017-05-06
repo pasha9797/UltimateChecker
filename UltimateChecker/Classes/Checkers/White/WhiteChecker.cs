@@ -9,8 +9,6 @@ namespace UltimateChecker
 {
     public class WhiteChecker:IChecker
     {
-        public event Lib.CoordChangedDel CoordChanged;
-
         public ICheckerState CheckerState
         {
             get
@@ -24,12 +22,19 @@ namespace UltimateChecker
             }
         }
         public Coord CurrentCoord { get; set; }
-
         public Coord newCoord { get; set; } //новые непроверенные координаты после перемещения
-
         public UserControl checkerUI { get; set; }
+        public bool IsKing
+        {
+            get
+            {
+                return CheckerState is WhiteKingCheckerState;
+            }
+        }
 
         private IWhiteCheckerState checkerState;
+
+        public event Lib.CoordChangedDel CoordChanged;
 
         public WhiteChecker(IWhiteCheckerState state, UserControl checkerUI)
         {
@@ -92,6 +97,12 @@ namespace UltimateChecker
         {
             CheckerState = new WhiteKingCheckerState();
             (checkerUI as CheckerUI).BecomeKing();
+        }
+
+        public void BecomeNormal()
+        {
+            CheckerState = new WhiteNormalCheckerState();
+            (checkerUI as CheckerUI).BecomeNormal();
         }
     }
 

@@ -21,13 +21,18 @@ namespace UltimateChecker
                     checkerState = value as IBlackCheckerState;
             }
         }
-
         public Coord CurrentCoord { get; set; }
-
         public UserControl checkerUI { get; set; }
+        public Coord newCoord { get; set; }
+        public bool IsKing
+        {
+            get
+            {
+                return CheckerState is BlackKingCheckerState;
+            }
+        }
 
         private IBlackCheckerState checkerState;
-        public Coord newCoord { get; set; }
 
         public event Lib.CoordChangedDel CoordChanged;
 
@@ -92,6 +97,11 @@ namespace UltimateChecker
         {
             CheckerState = new BlackKingCheckerState();
             (checkerUI as CheckerUI).BecomeKing();
+        }
+        public void BecomeNormal()
+        {
+            CheckerState = new BlackNormalCheckerState();
+            (checkerUI as CheckerUI).BecomeNormal();
         }
     }
 

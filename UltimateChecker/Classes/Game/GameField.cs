@@ -116,6 +116,10 @@ namespace UltimateChecker
                         {
                             formGrid.Children.Add(grid[i][j].checkerUI);
                         }
+                        if(state.WhoWasKing[grid[i][j]] == false && grid[i][j].IsKing)
+                        {
+                            grid[i][j].BecomeNormal();
+                        }
                         mainWindow.MoveCheckerToAnotherCell(grid[i][j].checkerUI, grid[i][j].CurrentCoord);
                     }
                 }
