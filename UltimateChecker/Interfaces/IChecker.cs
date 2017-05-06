@@ -28,9 +28,15 @@ namespace UltimateChecker
         ICheckerState CheckerState { get; set; }
         bool CheckPossibilityToMove(Coord coord, IGameField field);
         bool CheckPossibilityToKill(Coord coord, IGameField field);
+        bool CheckAllPossibilitiesToKill(IGameField filed);
+
+        event Lib.CoordChangedDel CoordChanged;
 
         IChecker GetVictim(Coord coord, IGameField field);
-        
+        bool CoordChangedFromForm(Coord newCoord);
+        void BecomeKing();
+
+
         Coord MoveForwardLeft(int numberOfSteps);
         Coord MoveForwardRight(int numberOfSteps);
         Coord MoveBackLeft(int numberOfSteps);

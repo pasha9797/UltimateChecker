@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using UltimateChecker.Classes.Players;
-using UltimateChecker.Classes.Checkers.White;
-using UltimateChecker.Classes.Checkers.Black;
 
 namespace UltimateChecker
 {
@@ -28,6 +26,7 @@ namespace UltimateChecker
                 LogStep(mover.CurrentCoord, coord, mover);
                 MoveCheckerDirectly(mover, coord);
                 CheckGettingKing(mover);
+                SwitchTurn();
                 NextTurn();
             }
         }
@@ -40,6 +39,7 @@ namespace UltimateChecker
                 MoveCheckerDirectly(killer, coord);
                 Kill(victim);
                 CheckGettingKing(killer);
+                SwitchTurn(killer);
                 NextTurn();
             }
         }
@@ -50,18 +50,42 @@ namespace UltimateChecker
             GameField.FormGrid.Children.Remove(victim.checkerUI);
         }
 
+        private void SwitchTurn(IChecker checker)
+        {
+            if (!checker.CheckAllPossibilitiesToKill(GameField))
+            {
+                SwitchTurn();
+            }
+        }
+
+        private void SwitchTurn()
+        {
+            if (GameField.Turn == Lib.PlayersSide.WHITE)
+                GameField.Turn = Lib.PlayersSide.BLACK;
+            else
+                GameField.Turn = Lib.PlayersSide.WHITE;
+        }
+
         private void CheckGettingKing(IChecker checker)
         {
             if (checker is WhiteChecker)
             {
                 if (checker.CurrentCoord.Row == 1)
-                    checker.CheckerState = new WhiteKingCheckerState();
+                    checker.BecomeKing();
             }
             else
             {
                 if (checker.CurrentCoord.Row == 8)
-                    checker.CheckerState = new BlackKingCheckerState();
+                    checker.BecomeKing();
             }
+        }
+
+        private void CheckGameOver()
+        {
+            if (GameField.WhiteCheckers.Count == 0)
+                MessageBox.Show("Чёрные победили!");
+            else if (GameField.BlackCheckers.Count == 0)
+                MessageBox.Show("Белые победили!");
         }
 
         private void MoveCheckerDirectly(IChecker checker, Coord coord)
@@ -73,25 +97,50 @@ namespace UltimateChecker
 
         public void UndoStep(ICommand command)
         {
+            if (GameField.Turn == Lib.PlayersSide.WHITE)
+                WhitePlayer.CancelStep();
+            else
+                BlackPlayer.CancelStep();
+
             GameField.RestoreState(states[command]);
             states.Remove(command);
+
+            NextTurn();
+        }
+
+        public void UndoByClick(int CommandID)
+        {
+            if (CommandID < states.Count)
+            {
+                for (int i = states.Count - 1; i > CommandID; i--)
+                {
+                    states.Remove(states.Keys.Last());
+                }
+                states.Keys.Last().Cansel();
+            }
         }
 
         private void LogStep(Coord prevCoord, Coord newCoord, IChecker checker)
         {
             string message;
-            message = (checker is WhiteChecker)?"White":"Black";
+            message = (checker is WhiteChecker) ? "White" : "Black";
             message += String.Format(": {0}{1} -> {2}{3}", Lib.Signs[prevCoord.Column], prevCoord.Row, Lib.Signs[newCoord.Column], newCoord.Row);
             GameField.StepsHistoryAdd(message);
+            mainWindow.AddLog(message);
         }
 
         private void LogStepWithKill(Coord prevCoord, Coord newCoord, IChecker checker, IChecker killed)
         {
-            LogStep(prevCoord, newCoord, checker);
             string message;
-            message = (killed is WhiteChecker) ? "White" : "Black";
+
+            message = (checker is WhiteChecker) ? "White" : "Black";
+            message += String.Format(": {0}{1} -> {2}{3}\n", Lib.Signs[prevCoord.Column], prevCoord.Row, Lib.Signs[newCoord.Column], newCoord.Row);
+
+            message += (killed is WhiteChecker) ? "White" : "Black";
             message += String.Format(": {0}{1} killed", Lib.Signs[killed.CurrentCoord.Column], killed.CurrentCoord.Row);
+
             GameField.StepsHistoryAdd(message);
+            mainWindow.AddLog(message);
         }
 
         public string[] GetStepsHistory()
@@ -105,21 +154,25 @@ namespace UltimateChecker
             FieldState state;
             switch (GameField.Turn)
             {
-                case PlayersSide.WHITE:
-                    UnblockGrid();
+                case Lib.PlayersSide.WHITE:
+                    BlockBlack();
                     command = await WhitePlayer.MakeStep(GameField);
-                    state = GameField.SaveState();
-                    states.Add(command, state);
-                    //GameField.Turn = PlayersSide.BLACK;
-                    command.Execute();
+                    if (command != null)
+                    {
+                        state = GameField.SaveState();
+                        states.Add(command, state);
+                        command.Execute();
+                    }
                     break;
-                case PlayersSide.BLACK:
-                    BlockGrid();
+                case Lib.PlayersSide.BLACK:
+                    BlockWhite();
                     command = await BlackPlayer.MakeStep(GameField);
-                    state = GameField.SaveState();
-                    states.Add(command, state);
-                    GameField.Turn = PlayersSide.WHITE;
-                    command.Execute();
+                    if (command != null)
+                    {
+                        state = GameField.SaveState();
+                        states.Add(command, state);
+                        command.Execute();
+                    }
                     break;
             }
 
@@ -131,8 +184,8 @@ namespace UltimateChecker
             GameField = new GameField(mainWindow);
             states = new Dictionary<ICommand, FieldState>();
 
-            BlackPlayer = new BotPlayer(this, PlayersSide.BLACK);
-            WhitePlayer = new Player(this, PlayersSide.WHITE);
+            BlackPlayer = new Player(this, Lib.PlayersSide.BLACK);
+            WhitePlayer = new Player(this, Lib.PlayersSide.WHITE);
 
             InitializePlayersForCheckers();
 
@@ -142,14 +195,14 @@ namespace UltimateChecker
 
         private void InitializePlayersForCheckers()
         {
-            foreach(IChecker checker in GameField.BlackCheckers)
+            foreach (IChecker checker in GameField.BlackCheckers)
             {
-                BlackCheckerUI checkerUI = checker.checkerUI as BlackCheckerUI;
+                CheckerUI checkerUI = checker.checkerUI as CheckerUI;
                 checkerUI.Player = BlackPlayer;
             }
             foreach (IChecker checker in GameField.WhiteCheckers)
             {
-                WhiteCheckerUI checkerUI = checker.checkerUI as WhiteCheckerUI;
+                CheckerUI checkerUI = checker.checkerUI as CheckerUI;
                 checkerUI.Player = WhitePlayer;
             }
         }
@@ -159,21 +212,31 @@ namespace UltimateChecker
 
         }
 
-        private void BlockGrid()
+        private void BlockBlack()
         {
             foreach (WhiteChecker checker in GameField.WhiteCheckers)
             {
-                WhiteCheckerUI checkUI = checker.checkerUI as WhiteCheckerUI;
+                CheckerUI checkUI = checker.checkerUI as CheckerUI;
+                checkUI.druggingIsPermitted = true;
+            }
+            foreach (BlackChecker checker in GameField.BlackCheckers)
+            {
+                CheckerUI checkUI = checker.checkerUI as CheckerUI;
                 checkUI.druggingIsPermitted = false;
             }
         }
 
 
-        private void UnblockGrid()
+        private void BlockWhite()
         {
             foreach (WhiteChecker checker in GameField.WhiteCheckers)
             {
-                WhiteCheckerUI checkUI = checker.checkerUI as WhiteCheckerUI;
+                CheckerUI checkUI = checker.checkerUI as CheckerUI;
+                checkUI.druggingIsPermitted = false;
+            }
+            foreach (BlackChecker checker in GameField.BlackCheckers)
+            {
+                CheckerUI checkUI = checker.checkerUI as CheckerUI;
                 checkUI.druggingIsPermitted = true;
             }
         }

@@ -10,13 +10,27 @@ namespace UltimateChecker
     {
         public IChecker[][] Grid { get; private set; }
         public List<string> StepsHistory { get; private set; }
-        public PlayersSide Turn { get; private set; }
+        public Lib.PlayersSide Turn { get; private set; }
 
-        public FieldState(IChecker[][] grid, List<string> stepsHistory, PlayersSide turn)
+        public FieldState(IChecker[][] grid, List<string> stepsHistory, Lib.PlayersSide turn)
         {
-            this.Grid = grid;
-            this.StepsHistory = stepsHistory;
-            this.Turn = turn;
+            Grid = new IChecker[9][];
+            for (int i = 1; i <= 8; i++)
+            {
+                Grid[i] = new IChecker[9];
+                for(int j=1;j<=8;j++)
+                {
+                    Grid[i][j] = grid[i][j];
+                }
+            }
+
+            StepsHistory = new List<string>();
+            foreach (string message in stepsHistory)
+            {
+                StepsHistory.Add(message);
+            }
+
+            Turn = turn;
         }
     }
 }

@@ -21,6 +21,6 @@ namespace UltimateChecker
         string[] StepsHistory { get; }
         List<IChecker> WhiteCheckers { get; }
         List<IChecker> BlackCheckers { get; }
-        PlayersSide Turn { get; set; }
+        Lib.PlayersSide Turn { get; set; }
     }
 }

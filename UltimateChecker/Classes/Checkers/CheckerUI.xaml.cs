@@ -13,15 +13,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace UltimateChecker.Classes.Checkers.White
+namespace UltimateChecker
 {
     /// <summary>
     /// Interaction logic for WhiteCheckerUI.xaml
     /// </summary>
-    public partial class WhiteCheckerUI : UserControl
+    public partial class CheckerUI : UserControl
     {
-        int row;
-        int column;
         Point anchorPoint;
         Point currentPoint;
         private TranslateTransform transform = new TranslateTransform();
@@ -44,13 +42,31 @@ namespace UltimateChecker.Classes.Checkers.White
         public delegate IChecker GetVictimDel(Coord newCoord, IChecker checker);
         public event GetVictimDel GetVictim;
 
-        public WhiteChecker ConnectedChecker;
+        public IChecker ConnectedChecker;
 
-        public WhiteCheckerUI(Coord coord)
+        public CheckerUI()
         {
             InitializeComponent();
-            row = coord.Row;
-            column = coord.Column;
+        }
+
+        public void AssignConnectedChecker(IChecker checker)
+        {
+            if(checker is BlackChecker)
+            {
+                Ellipse.Fill = Brushes.Black;
+                Ellipse.Stroke = Brushes.Gray;
+            }
+            else
+            {
+                Ellipse.Fill = Brushes.White;
+                Ellipse.Stroke = Brushes.Black;
+            }
+        }
+
+        public void BecomeKing()
+        {
+            Ellipse.Stroke = Brushes.Red;
+            Ellipse.StrokeThickness = 4;
         }
 
         private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)
@@ -102,10 +118,8 @@ namespace UltimateChecker.Classes.Checkers.White
             {
                 transform.X = 0;
                 transform.Y = 0;
-                row = newCoord.Row;
-                column = newCoord.Column;
                 MovingToAnotherCell(this, newCoord);
-                Player.StepFinished(newCoord, ConnectedChecker, GetVictim(newCoord, ConnectedChecker)); 
+                Player.FinishStep(newCoord, ConnectedChecker, GetVictim(newCoord, ConnectedChecker)); 
             }
             else
             {

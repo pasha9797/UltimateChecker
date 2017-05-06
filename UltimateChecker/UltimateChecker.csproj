@@ -58,11 +58,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithms\PriorityQueue.cs" />
-    <Compile Include="Classes\Checkers\Black\BlackCheckerUI.xaml.cs">
-      <DependentUpon>BlackCheckerUI.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Classes\Checkers\White\WhiteCheckerUI.xaml.cs">
-      <DependentUpon>WhiteCheckerUI.xaml</DependentUpon>
+    <Compile Include="Classes\Checkers\CheckerUI.xaml.cs">
+      <DependentUpon>CheckerUI.xaml</DependentUpon>
     </Compile>
     <Compile Include="Classes\Game\KillingCommand.cs" />
     <Compile Include="Classes\Game\MovingCommand.cs" />
@@ -75,11 +72,7 @@
     <Compile Include="Classes\Checkers\White\WhiteChecker.cs" />
     <Compile Include="Classes\Checkers\White\WhiteKingCheckerState.cs" />
     <Compile Include="Classes\Checkers\White\WhiteNormalCheckerState.cs" />
-    <Page Include="Classes\Checkers\Black\BlackCheckerUI.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Classes\Checkers\White\WhiteCheckerUI.xaml">
+    <Page Include="Classes\Checkers\CheckerUI.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

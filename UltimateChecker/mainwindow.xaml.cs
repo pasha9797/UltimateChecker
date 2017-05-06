@@ -20,14 +20,17 @@ namespace UltimateChecker
     /// </summary>
     public partial class MainWindow : Window
     {
+        Game game;
+
         public MainWindow()
         {
             InitializeComponent();
-            PaintCircles(grid);
-            Game game = new Game(this);
+            PaintRectangles(grid);
+            game = new Game(this);
+            WindowState = WindowState.Maximized;
         }
 
-        private void PaintCircles(Grid gridForm)
+        private void PaintRectangles(Grid gridForm)
         {
             for (int i = 0; i < 8; i++)
             {
@@ -66,6 +69,29 @@ namespace UltimateChecker
         {
             Grid.SetColumn(checker, newCheckersCoord.Column - 1);
             Grid.SetRow(checker, newCheckersCoord.Row - 1);
+        }
+
+        public void AddLog(string message)
+        {
+            StepsHistory.Items.Add(message);
+            StepsHistory.ScrollIntoView(message);
+        }
+
+        private void RestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (StepsHistory.SelectedIndex >= 0)
+            {
+                game.UndoByClick(StepsHistory.SelectedIndex);
+                StepsHistory.Items.Clear();
+                foreach (string message in game.GameField.StepsHistory)
+                {
+                    StepsHistory.Items.Add(message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите шаг из списка!");
+            }
         }
     }
 }

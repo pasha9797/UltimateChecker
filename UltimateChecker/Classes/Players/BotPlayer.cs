@@ -8,23 +8,18 @@ using UltimateChecker.Algorithms;
 namespace UltimateChecker
 {
 
-    public enum PlayersSide
-    {
-        WHITE,
-        BLACK
-    }
-
     class BotPlayer : IPlayer
     {
         IGame game;
         IGameField gameField;
         ICommand turnCommand;
-        PlayersSide side;
+        Lib.PlayersSide side;
         PriorityQueue<ICommand, double> commands;
+        private bool stepCanceled=false;
 
 
 
-        public BotPlayer(IGame game, PlayersSide side)
+        public BotPlayer(IGame game, Lib.PlayersSide side)
         {
             this.side = side;
         }
@@ -43,12 +38,24 @@ namespace UltimateChecker
 
         private ICommand MakeTurn()
         {
+            stepCanceled = false; //в начале шага эта переменная false
+
             CheckAllChreckersForPossibilityToKill(side); //проверка на возможность убийства
 
+            if (stepCanceled) return null; //если к концу шага она стала true, значит был откат шагов и этот шаг отменяется
             return commands.Dequeue();//возврат самой приоритетной операции
         }
 
-        private void CheckAllChreckersForPossibilityToKill(PlayersSide side)
+        public void FinishStep(Coord coord, IChecker mover, IChecker victim)//просто для реализации интерфейса
+        {
+        }
+
+        public void CancelStep()
+        {
+            stepCanceled = true;
+        }
+
+        private void CheckAllChreckersForPossibilityToKill(Lib.PlayersSide side)
         {
             List<IChecker> allies = GetAllies(side);
 
@@ -60,7 +67,7 @@ namespace UltimateChecker
             }
         }
 
-        private void CheckAllCheckersForPossibilityToMove(PlayersSide side)
+        private void CheckAllCheckersForPossibilityToMove(Lib.PlayersSide side)
         {
             List<IChecker> allies = GetAllies(side);
 
@@ -94,17 +101,12 @@ namespace UltimateChecker
             return null; //нет возможности убийства
         }
 
-        public void StepFinished(Coord coord, IChecker mover,  IChecker victim)
-        {
-        }
-
-
-        private void CheckPossibilityToMove(PlayersSide side, IChecker checker)
+        private void CheckPossibilityToMove(Lib.PlayersSide side, IChecker checker)
         {
             // WARNING : ГОВНОКОД, тк не могу понять сразу является-ли шашка дамкой или нет. Приходится выяснять. Портит ООП пиздец.
             switch (side)
             {
-                case PlayersSide.WHITE:
+                case Lib.PlayersSide.WHITE:
                     if(checker.CheckerState is WhiteNormalCheckerState)
                     {
                         double stepPriority = 1;
@@ -122,7 +124,7 @@ namespace UltimateChecker
 
                     }
                     break;
-                case PlayersSide.BLACK:
+                case Lib.PlayersSide.BLACK:
                     if (checker.CheckerState is BlackNormalCheckerState)
                     {
                         double stepPriority = 1;
@@ -187,14 +189,14 @@ namespace UltimateChecker
             return 1;
         }
 
-        private List<IChecker> GetAllies(PlayersSide side)
+        private List<IChecker> GetAllies(Lib.PlayersSide side)
         {
-            return (side == PlayersSide.WHITE) ? gameField.WhiteCheckers : gameField.BlackCheckers;
+            return (side == Lib.PlayersSide.WHITE) ? gameField.WhiteCheckers : gameField.BlackCheckers;
         }
 
-        private List<IChecker> GetEnemies(PlayersSide side)
+        private List<IChecker> GetEnemies(Lib.PlayersSide side)
         {
-            return (side == PlayersSide.WHITE) ? gameField.BlackCheckers : gameField.WhiteCheckers;
+            return (side == Lib.PlayersSide.WHITE) ? gameField.BlackCheckers : gameField.WhiteCheckers;
         }
 
         private Coord Destination(Coord killerCoord, Coord victimCoord)

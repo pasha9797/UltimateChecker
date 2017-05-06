@@ -75,7 +75,7 @@ namespace UltimateChecker
                 return whiteList;
             }
         }
-        public PlayersSide Turn { get; set; }
+        public Lib.PlayersSide Turn { get; set; }
 
         public delegate void SendCommandToPlayerDel(IChecker checker, Coord currentCoord, Coord destination);
         public event SendCommandToPlayerDel SendCommandToPlayerEvent;
@@ -95,11 +95,7 @@ namespace UltimateChecker
 
         public FieldState SaveState() //реализация хранителя | Сохранение
         {
-            return new FieldState(
-                Lib.CreateCopy(grid),  //копия поля
-                Lib.CreateCopy(stepsHistory), //копия истории ходов
-                Lib.CreateCopy(Turn) //копия инф-ии о том чей ход
-                );
+            return new FieldState(grid, stepsHistory, Turn);
         }
 
         public void RestoreState(FieldState state) //реализация хранителя | Восстановление 
@@ -107,6 +103,23 @@ namespace UltimateChecker
             this.grid = state.Grid;
             this.stepsHistory = state.StepsHistory;
             this.Turn = state.Turn;
+
+            for (int i = 1; i <= 8; i++)
+            {
+                for (int j = 1; j <= 8; j++)
+                {
+                    if (grid[i][j] != null)
+                    {
+                        grid[i][j].CurrentCoord.Row = i;
+                        grid[i][j].CurrentCoord.Column = j;
+                        if(!formGrid.Children.Contains(grid[i][j].checkerUI))
+                        {
+                            formGrid.Children.Add(grid[i][j].checkerUI);
+                        }
+                        mainWindow.MoveCheckerToAnotherCell(grid[i][j].checkerUI, grid[i][j].CurrentCoord);
+                    }
+                }
+            }
         }
 
         public void StepsHistoryAdd(string log)
@@ -144,7 +157,7 @@ namespace UltimateChecker
             }
 
             stepsHistory = new List<string>();
-            Turn = PlayersSide.WHITE; // whites start
+            Turn = Lib.PlayersSide.WHITE; // whites start
 
             for (int i = 1; i <= 8; i++) //генерация шашек
             {
@@ -161,7 +174,11 @@ namespace UltimateChecker
                     CheckerFactory.CreateWhite(new Coord(8, i), this);
                 }
             }
-            CheckerFactory.CreateBlack(new Coord(5, 2), this);
+            
+            //CheckerFactory.CreateBlack(new Coord(5, 2), this);
+            //CheckerFactory.CreateBlack(new Coord(4, 3), this);
+            //IChecker checker = CheckerFactory.CreateWhite(new Coord(3, 3), this);
+            //checker.BecomeKing();
         }
     }
 }

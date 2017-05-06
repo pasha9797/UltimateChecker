@@ -9,8 +9,7 @@ namespace UltimateChecker
 {
     public class WhiteChecker:IChecker
     {
-        public delegate bool CoordChangedDel(Coord newCoord, IChecker instance);
-        public event CoordChangedDel CoordChanged;
+        public event Lib.CoordChangedDel CoordChanged;
 
         public ICheckerState CheckerState
         {
@@ -48,6 +47,15 @@ namespace UltimateChecker
             return CheckerState.CheckPossibilityToKill(CurrentCoord, coord, field);
         }
 
+        public bool CheckAllPossibilitiesToKill(IGameField field)
+        {
+            return
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row + 2, CurrentCoord.Column + 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row + 2, CurrentCoord.Column - 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row - 2, CurrentCoord.Column - 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row - 2, CurrentCoord.Column + 2), field);
+        }
+
         public IChecker GetVictim(Coord coord, IGameField field)
         {
             return CheckerState.GetVictim(CurrentCoord, coord, field);
@@ -78,6 +86,12 @@ namespace UltimateChecker
             this.newCoord = newCoord;
             bool result = CoordChanged(newCoord, this); //проверка координат, присваивание, если перемещение возможно
             return result; 
+        }
+
+        public void BecomeKing()
+        {
+            CheckerState = new WhiteKingCheckerState();
+            (checkerUI as CheckerUI).BecomeKing();
         }
     }
 

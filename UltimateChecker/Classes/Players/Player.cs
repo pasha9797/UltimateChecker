@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace UltimateChecker.Classes.Players
@@ -10,14 +7,15 @@ namespace UltimateChecker.Classes.Players
     {
         IGame game;
         ICommand turnCommand;
-        PlayersSide side;
+        Lib.PlayersSide side;
 
-        private bool WaitingForStep = false;
+        private bool waitingForStep = false;
+        private bool stepCanceled = false;
         private IChecker victim;
         private Coord dest;
         private IChecker mover;
 
-        public Player(IGame game, PlayersSide side)
+        public Player(IGame game, Lib.PlayersSide side)
         {
             this.side = side;
             this.game = game;
@@ -30,8 +28,16 @@ namespace UltimateChecker.Classes.Players
 
         private ICommand MakeTurn()
         {
-            WaitingForStep = true;
-            while (WaitingForStep) ;
+            waitingForStep = true;
+            stepCanceled = false;
+
+            while (waitingForStep && !stepCanceled) ;
+
+            if (stepCanceled)
+            {
+                return null;
+            }
+
             if (IsVictim())
             {
                 return new KillingCommand(game, mover, victim, dest);
@@ -42,12 +48,17 @@ namespace UltimateChecker.Classes.Players
             }
         }
 
-        public void StepFinished(Coord coord, IChecker mover, IChecker victim)
+        public void FinishStep(Coord coord, IChecker mover, IChecker victim)
         {
-            WaitingForStep = false;
+            waitingForStep = false;
             dest = coord;
             this.mover = mover;
             this.victim = victim;
+        }
+
+        public void CancelStep()
+        {
+            stepCanceled = true;
         }
 
         private bool IsVictim()

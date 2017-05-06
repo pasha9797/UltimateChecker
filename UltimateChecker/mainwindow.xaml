@@ -27,6 +27,9 @@
             <ColumnDefinition Width="68*"/>
             <ColumnDefinition Width="68*"/>
         </Grid.ColumnDefinitions>
+        <Label x:Name="label" Content="История ходов" Grid.Column="7" Margin="0,16,-445,0" VerticalAlignment="Top" FontSize="14" Width="122" HorizontalAlignment="Right" HorizontalContentAlignment="Center"/>
+        <ListBox x:Name="StepsHistory" Grid.Column="7" HorizontalAlignment="Right" Margin="0,50,-509,71" Grid.RowSpan="8" Width="254"/>
+        <Button x:Name="RestoreButton" Content="Восстановить" Grid.Column="7" HorizontalAlignment="Right" Margin="0,0,-426,29" Grid.Row="7" VerticalAlignment="Bottom" Width="90" Click="RestoreButton_Click"/>
 
     </Grid>
 </Window>

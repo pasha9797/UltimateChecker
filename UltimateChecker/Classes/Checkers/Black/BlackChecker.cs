@@ -21,11 +21,15 @@ namespace UltimateChecker
                     checkerState = value as IBlackCheckerState;
             }
         }
+
         public Coord CurrentCoord { get; set; }
 
         public UserControl checkerUI { get; set; }
 
         private IBlackCheckerState checkerState;
+        public Coord newCoord { get; set; }
+
+        public event Lib.CoordChangedDel CoordChanged;
 
         public BlackChecker(IBlackCheckerState state, UserControl checkerUI)
         {
@@ -41,6 +45,15 @@ namespace UltimateChecker
         public bool CheckPossibilityToKill(Coord coord, IGameField field)
         {
             return CheckerState.CheckPossibilityToKill(CurrentCoord, coord, field);
+        }
+
+        public bool CheckAllPossibilitiesToKill(IGameField field)
+        {
+            return
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row + 2, CurrentCoord.Column + 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row + 2, CurrentCoord.Column - 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row - 2, CurrentCoord.Column - 2), field) ||
+                CheckerState.CheckPossibilityToKill(CurrentCoord, new Coord(CurrentCoord.Row - 2, CurrentCoord.Column + 2), field);
         }
 
         public IChecker GetVictim(Coord coord, IGameField field)
@@ -66,6 +79,19 @@ namespace UltimateChecker
         public Coord MoveBackRight(int numberOfSteps)
         {
             return (CheckerState is BlackKingCheckerState) ? CheckerState.MoveBackRight(CurrentCoord, numberOfSteps) : null;
+        }
+
+        public bool CoordChangedFromForm(Coord newCoord)
+        {
+            this.newCoord = newCoord;
+            bool result = CoordChanged(newCoord, this); //проверка координат, присваивание, если перемещение возможно
+            return result;
+        }
+
+        public void BecomeKing()
+        {
+            CheckerState = new BlackKingCheckerState();
+            (checkerUI as CheckerUI).BecomeKing();
         }
     }
 

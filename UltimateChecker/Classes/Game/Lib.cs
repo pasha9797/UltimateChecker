@@ -21,6 +21,14 @@ namespace UltimateChecker
             { 8, 'H' }
         };
 
+        public enum PlayersSide
+        {
+            WHITE,
+            BLACK
+        }
+
+        public delegate bool CoordChangedDel(Coord newCoord, IChecker instance);
+
         public static T CreateCopy<T>(T aobject)
         {
             if (aobject != null)
@@ -36,7 +44,19 @@ namespace UltimateChecker
             }
             else return default(T);
         }
-       
+
+        public static void RestoreObject<T>(T aobject, T state)
+        {
+            if (aobject != null)
+            {
+                foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    object obj = f.GetValue(state);
+                    f.SetValue(aobject, obj);
+                }
+            }
+        }
+
         public static UserControl DraggingChecker { get; set; }
     }
 }
