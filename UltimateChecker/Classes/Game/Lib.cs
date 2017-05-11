@@ -28,34 +28,7 @@ namespace UltimateChecker
         }
 
         public delegate bool CoordChangedDel(Coord newCoord, IChecker instance);
-
-        public static T CreateCopy<T>(T aobject)
-        {
-            if (aobject != null)
-            {
-                MethodInfo memberwiseClone = aobject.GetType().GetMethod("MemberwiseClone", BindingFlags.Instance | BindingFlags.NonPublic);
-                T Copy = (T)memberwiseClone.Invoke(aobject, null);
-                foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
-                {
-                    object original = f.GetValue(aobject);
-                    f.SetValue(Copy, CreateCopy(original));
-                }
-                return Copy;
-            }
-            else return default(T);
-        }
-
-        public static void RestoreObject<T>(T aobject, T state)
-        {
-            if (aobject != null)
-            {
-                foreach (FieldInfo f in typeof(T).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
-                {
-                    object obj = f.GetValue(state);
-                    f.SetValue(aobject, obj);
-                }
-            }
-        }
+        public delegate void CapitulateDel(PlayersSide side);
 
         public static UserControl DraggingChecker { get; set; }
     }

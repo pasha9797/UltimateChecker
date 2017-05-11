@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UltimateChecker.Algorithms;
 
@@ -13,37 +14,19 @@ namespace UltimateChecker
         IGame game;
         IGameField gameField;
         ICommand turnCommand;
+        IChecker[][] boardState;
         Lib.PlayersSide side;
         PriorityQueue<ICommand, double> commands;
-        private bool stepCanceled=false;
-
+        private bool stepCanceled = false;
+        List<TurnNode> TurnNodes = new List<TurnNode>();
+        int NumberOfRecurciveLevels = 2;
+        public Lib.CapitulateDel Capitulate { get; set; }
 
 
         public BotPlayer(IGame game, Lib.PlayersSide side)
         {
             this.side = side;
-        }
-
-        public async Task<ICommand> MakeStep(IGameField gameField)
-        {
-            commands = new PriorityQueue<ICommand, double>();
-            this.gameField = gameField;
-            return await MakeTurnTask();
-        }
-
-        Task<ICommand> MakeTurnTask()
-        {
-            return Task<ICommand>.Run<ICommand>(new Func<ICommand>(MakeTurn));
-        }
-
-        private ICommand MakeTurn()
-        {
-            stepCanceled = false; //в начале шага эта переменная false
-
-            CheckAllChreckersForPossibilityToKill(side); //проверка на возможность убийства
-
-            if (stepCanceled) return null; //если к концу шага она стала true, значит был откат шагов и этот шаг отменяется
-            return commands.Dequeue();//возврат самой приоритетной операции
+            this.game = game;
         }
 
         public void FinishStep(Coord coord, IChecker mover, IChecker victim)//просто для реализации интерфейса
@@ -55,174 +38,406 @@ namespace UltimateChecker
             stepCanceled = true;
         }
 
-        private void CheckAllChreckersForPossibilityToKill(Lib.PlayersSide side)
+        public async Task<ICommand> MakeStep(IGameField gameField)
         {
-            List<IChecker> allies = GetAllies(side);
+            TurnNodes = new List<TurnNode>();
+            this.gameField = gameField;
+            boardState = gameField.Grid;
+            return await Task<ICommand>.Run<ICommand>(new Func<ICommand>(MakeTurn));
+        }
 
-            foreach (var checker in allies)
+        private ICommand MakeTurn()
+        {
+            stepCanceled = false; //в начале шага эта переменная false
+            Thread.Sleep(1000);
+           
+            MakeTurnNodes(null, Lib.PlayersSide.BLACK, 0);
+
+            if (stepCanceled) return null; //если к концу шага она стала true, значит был откат шагов и этот шаг отменяется
+            return FindCommand(TurnNodes);
+        }
+
+        private ICommand FindCommand(List<TurnNode> turnNodes)
+        {
+            if (turnNodes.Count > 0)
             {
-                Coord destination;
-                IChecker victim = CheckPossibilityToKill(checker, out destination);
-                if (victim != null) commands.Enqueue(new KillingCommand(game, checker, victim, destination), 10);
+                Mixer(ref turnNodes);
+
+                turnNodes.ForEach((node) => node.CountValue());
+
+                ICommand command = turnNodes.Max().turnCommand;
+                return command;
+            }
+            else
+            {
+                Capitulate(side);
+                return null;
             }
         }
 
-        private void CheckAllCheckersForPossibilityToMove(Lib.PlayersSide side)
+        private void Mixer (ref List<TurnNode> nodes)
         {
-            List<IChecker> allies = GetAllies(side);
-
-            foreach (var checker in allies)
+            int a = (new Random()).Next(0, nodes.Count);
+            for (int i = 0; i < a; i++)
             {
-                CheckPossibilityToMove(side, checker);
+                int b = (new Random()).Next(0, nodes.Count);
+                int c = (new Random()).Next(0, nodes.Count);
+                TurnNode temp = nodes[b];
+                nodes[b] = nodes[c];
+                nodes[c] = temp;
             }
+            if(nodes.Count>0)
+                nodes[0] = nodes[a];
         }
-
-        private IChecker CheckPossibilityToKill(IChecker checker, out Coord destination)
+            
+        private void MakeTurnNodes(TurnNode currentNode, Lib.PlayersSide whoseTurn, int recurciveLevel)
         {
-            IChecker[][] grid = gameField.Grid;
-            List<IChecker> enemies = GetEnemies(side);
-
-            int row = checker.CurrentCoord.Row;
-            int column = checker.CurrentCoord.Column;
-            destination = default(Coord);
-
-            try
+            if (recurciveLevel <= NumberOfRecurciveLevels)
             {
-                foreach (IChecker enemy in enemies)
+                List<TurnNode> TurnNodes = new List<TurnNode>();
+                if (recurciveLevel == 0)
                 {
-                    destination = Destination(checker.CurrentCoord, enemy.CurrentCoord);
-                    if (checker.CheckPossibilityToKill(destination, gameField))
+                    currentNode = new TurnNode(boardState, -1, 0); // корень дерева
+                }
+
+                List<IChecker> allies = GetAllies(whoseTurn, currentNode.state);
+                List<IChecker> enemies = GetEnemies(whoseTurn, currentNode.state);
+
+                foreach (var checker in allies)
+                {
+                    if (checker.IsKing)
                     {
-                        return enemy;
+                        CheckKingKilling(currentNode, whoseTurn, checker, recurciveLevel);
+                        CheckKingMovement(currentNode, whoseTurn, checker, recurciveLevel);
+                    }
+                    else
+                    {
+                        CheckKilling(currentNode, whoseTurn, checker, recurciveLevel);
+                        CheckMovement(currentNode, whoseTurn, checker, recurciveLevel);
+                    }                 
+                }
+
+            }
+        }
+
+        private IChecker[][] CreateStateCopy(IChecker[][] state)
+        {
+            IChecker[][] newState = new IChecker[9][];
+            CheckerFactory factory = CheckerFactory.GetInstance();
+            for (int i = 1; i <= 8; i++)
+            {
+                newState[i] = new IChecker[9];
+            }
+
+            for (int i = 1; i <= 8; i++)
+            {
+                for (int j = 1; j <= 8; j++)
+                {
+                    if (state[i][j] != null)
+                    {
+                        if (state[i][j] is BlackChecker)
+                        {
+                            IChecker black = factory.CreateBlackPhantom(new Coord(i, j), gameField);
+                            newState[i][j] = black;
+                        }
+                        else if (state[i][j] is WhiteChecker)
+                        {
+                            newState[i][j] = factory.CreateWhitePhantom(new Coord(i, j), gameField);
+                        }
+                        if (newState[i][j].IsKing) state[i][j].BecomeKing();
                     }
                 }
             }
-            catch (Exception e) { }
-            return null; //нет возможности убийства
+            return newState;
         }
 
-        private void CheckPossibilityToMove(Lib.PlayersSide side, IChecker checker)
+        private TurnNode KillingRecurcion(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, Coord destination, int level)
         {
-            // WARNING : ГОВНОКОД, тк не могу понять сразу является-ли шашка дамкой или нет. Приходится выяснять. Портит ООП пиздец.
-            switch (side)
+            int killingValue = (whoseTurn == Lib.PlayersSide.BLACK) ? 100 : 0;
+            IChecker[][] state = CreateStateCopy(currentNode.state);
+            TurnNode newNode = new TurnNode(state, killingValue, level);//чем больше уровень рекурсии, тем меньше         
+            if (checker.CurrentCoord.Row == 4 && checker.CurrentCoord.Column == 3 && level == 0)
             {
-                case Lib.PlayersSide.WHITE:
-                    if(checker.CheckerState is WhiteNormalCheckerState)
-                    {
-                        double stepPriority = 1;
-                        stepPriority = MoveForwardLeft(checker, 1);
-                        if (stepPriority != 0)//если == 0 - ход невозможен
-                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardLeft(1)), stepPriority); // команда сдвига вперед-влево
 
-                        stepPriority = 1;
-                        stepPriority = MoveForwardRight(checker, 1);
-                        if (stepPriority != 0)//если == 0 - ход невозможен
-                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardRight(1)), stepPriority); // команда сдвига вперед-влево
-                    }
-                    else if(checker.CheckerState is WhiteKingCheckerState)
-                    {
+            }
 
-                    }
-                    break;
-                case Lib.PlayersSide.BLACK:
-                    if (checker.CheckerState is BlackNormalCheckerState)
-                    {
-                        double stepPriority = 1;
-                        stepPriority = MoveForwardLeft(checker, 1);
-                        if (stepPriority != 0)//если == 0 - ход невозможен
-                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardLeft(1)), stepPriority); // команда сдвига вперед-влево
+            bool a = (side == Lib.PlayersSide.BLACK && checker is BlackChecker) || (side == Lib.PlayersSide.WHITE && checker is WhiteChecker);
 
-                        stepPriority = 1;
-                        stepPriority = MoveForwardRight(checker, 1);
-                        if (stepPriority != 0)//если == 0 - ход невозможен
-                            commands.Enqueue(new MovingCommand(game, checker, checker.MoveForwardRight(1)), stepPriority); // команда сдвига вперед-влево
-                    }
-                    else if (checker.CheckerState is WhiteKingCheckerState)
-                    {
+            if (level == 0 && a)
+            {
+                KillingCommand command = new KillingCommand(game, checker, checker.GetVictim(destination, gameField), destination);
+                newNode.turnCommand = command; //присваеваем команду на первом уровне рекурсии
+                TurnNodes.Add(newNode);
+            }
+            state = ExecuteOperationToKill(state, state[checker.CurrentCoord.Row][checker.CurrentCoord.Column], checker.GetVictim(destination, gameField), destination);
+            MakeTurnNodes(newNode, AnotherPlayer(whoseTurn), level + 1);
+            return newNode;
+        }
 
-                    }
-                    break;
-                default:
-                    break;
+        private TurnNode MovingRecurcion(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, Coord destination, int level)
+        {
+            IChecker[][] state = CreateStateCopy(currentNode.state);
+            state = ExecuteOperationToMove(state, state[checker.CurrentCoord.Row][checker.CurrentCoord.Column], destination);
+            TurnNode newNode = new TurnNode(state, EstimatingFunction(state), level);
+
+            bool a = (side == Lib.PlayersSide.BLACK && checker is BlackChecker) || (side == Lib.PlayersSide.WHITE && checker is WhiteChecker);
+
+            if (level == 0 && a)
+            {
+                MovingCommand command = new MovingCommand(game, checker, destination);
+                newNode.turnCommand = command; //присваеваем команду на первом уровне рекурсии
+                TurnNodes.Add(newNode);
+            }
+            MakeTurnNodes(newNode, AnotherPlayer(whoseTurn), level + 1);
+            return newNode;
+        }
+
+        private void CheckKingMovement(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, int level)
+        {
+            int i = checker.CurrentCoord.Row;
+            int j = checker.CurrentCoord.Column;
+            while ((i <= 8) && (j <= 8))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i++;
+                j++;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i <= 8) && (j >= 1))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i++;
+                j--;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i >= 1) && (j <= 8))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i--;
+                j++;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i >= 1) && (j >= 1))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i--;
+                j--;
             }
         }
 
-        private double MoveForwardLeft(IChecker mover, int numberOfSteps)
+        private void CheckKingKilling(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, int level)
         {
-            double stepPriority = 0;
-            Coord destination = mover.MoveForwardLeft(numberOfSteps);
-            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
-            else stepPriority += CheckPossibilityToBeKilled(destination);
-            return stepPriority;
+            int i = checker.CurrentCoord.Row;
+            int j = checker.CurrentCoord.Column;
+            while ((i <= 8) && (j <= 8))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i++;
+                j++;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i <= 8) && (j >= 1))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i++;
+                j--;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i >= 1) && (j <= 8))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i--;
+                j++;
+            }
+
+            i = checker.CurrentCoord.Row;
+            j = checker.CurrentCoord.Column;
+            while ((i >= 1) && (j >= 1))
+            {
+                if (checker.CheckPossibilityToKill(new Coord(i, j), gameField))
+                {
+                    currentNode.AddChild(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(i, j), level));
+                }
+                i--;
+                j--;
+            }
         }
 
-        private double MoveForwardRight(IChecker mover, int numberOfSteps)
+        private void CheckMovement(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, int level)
         {
-            double stepPriority = 0;
-            Coord destination = mover.MoveForwardRight(numberOfSteps);
-            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
-            else stepPriority += CheckPossibilityToBeKilled(destination);
-            return stepPriority;
+            List<TurnNode> turnNodes = new List<TurnNode>();
+
+            if (checker.CheckPossibilityToMove(new Coord(checker.CurrentCoord.Row + 1, checker.CurrentCoord.Column + 1), gameField))
+            {
+                turnNodes.Add(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row + 1, checker.CurrentCoord.Column + 1), level));
+            }
+            if (checker.CheckPossibilityToMove(new Coord(checker.CurrentCoord.Row - 1, checker.CurrentCoord.Column + 1), gameField))
+            {
+                turnNodes.Add(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row - 1, checker.CurrentCoord.Column + 1), level));
+            }
+            if (checker.CheckPossibilityToMove(new Coord(checker.CurrentCoord.Row + 1, checker.CurrentCoord.Column - 1), gameField))
+            {
+                turnNodes.Add(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row + 1, checker.CurrentCoord.Column - 1), level));
+            }
+            if (checker.CheckPossibilityToMove(new Coord(checker.CurrentCoord.Row - 1, checker.CurrentCoord.Column - 1), gameField))
+            {
+                turnNodes.Add(MovingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row - 1, checker.CurrentCoord.Column - 1), level));
+            }
+
+            currentNode.AddChild(turnNodes);
         }
 
-        private double MoveBackLeft(IChecker mover, int numberOfSteps)
+        private void CheckKilling(TurnNode currentNode, Lib.PlayersSide whoseTurn, IChecker checker, int level)
         {
-            double stepPriority = 0;
-            Coord destination = mover.MoveBackLeft(numberOfSteps);
-            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
-            else stepPriority += CheckPossibilityToBeKilled(destination);
-            return stepPriority;
+            List<TurnNode> turnNodes = new List<TurnNode>();
+
+            if (checker.CheckPossibilityToKill(new Coord(checker.CurrentCoord.Row + 2, checker.CurrentCoord.Column + 2), gameField))
+            {
+                turnNodes.Add(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row + 2, checker.CurrentCoord.Column + 2), level));
+            }
+            if (checker.CheckPossibilityToKill(new Coord(checker.CurrentCoord.Row - 2, checker.CurrentCoord.Column + 2), gameField))
+            {
+                turnNodes.Add(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row - 2, checker.CurrentCoord.Column + 2), level));
+            }
+            if (checker.CheckPossibilityToKill(new Coord(checker.CurrentCoord.Row + 2, checker.CurrentCoord.Column - 2), gameField))
+            {
+                turnNodes.Add(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row + 2, checker.CurrentCoord.Column - 2), level));
+            }
+            if (checker.CheckPossibilityToKill(new Coord(checker.CurrentCoord.Row - 2, checker.CurrentCoord.Column - 2), gameField))
+            {
+                turnNodes.Add(KillingRecurcion(currentNode, whoseTurn, checker, new Coord(checker.CurrentCoord.Row - 2, checker.CurrentCoord.Column - 2), level));
+            }
+
+            currentNode.AddChild(turnNodes);
         }
 
-        private double MoveBackRight(IChecker mover, int numberOfSteps)
+        private Lib.PlayersSide AnotherPlayer(Lib.PlayersSide playerside)
         {
-            double stepPriority = 0;
-            Coord destination = mover.MoveBackRight(numberOfSteps);
-            if (!mover.CheckPossibilityToMove(destination, gameField)) return stepPriority;
-            else stepPriority += CheckPossibilityToBeKilled(destination);
-            return stepPriority;
+            return (playerside == Lib.PlayersSide.BLACK) ? Lib.PlayersSide.WHITE : Lib.PlayersSide.BLACK;
         }
 
-        private double CheckPossibilityToBeKilled(Coord destination)
+        private double EstimatingFunction(IChecker[][] boardState)
         {
-            // допилить
-            return 1;
+            double result = 50;
+
+            List<IChecker> allies = GetAllies(side, boardState);
+            List<IChecker> enemies = GetEnemies(side, boardState);
+
+            return result;
+        } // функция валидации хода
+
+        private IChecker[][] ExecuteOperationToKill(IChecker[][] newBoardState, IChecker killer, IChecker victim, Coord coord)
+        {
+            if (killer.CheckPossibilityToKill(coord, gameField))
+            {
+                newBoardState[killer.CurrentCoord.Row][killer.CurrentCoord.Column] = null;
+                killer.CurrentCoord = coord;
+                newBoardState[killer.CurrentCoord.Row][killer.CurrentCoord.Column] = killer;
+                newBoardState[victim.CurrentCoord.Row][victim.CurrentCoord.Column] = null;
+                CheckGettingKing(killer);
+            }
+
+            return newBoardState;
+        } //виртуальное исполнение команды на убийство
+
+        private IChecker[][] ExecuteOperationToMove(IChecker[][] newBoardState, IChecker mover, Coord coord)
+        {
+            if (mover.CheckPossibilityToMove(coord, gameField))
+            {
+                newBoardState[mover.CurrentCoord.Row][mover.CurrentCoord.Column] = null;
+                mover.CurrentCoord = coord;
+                newBoardState[mover.CurrentCoord.Row][mover.CurrentCoord.Column] = mover;
+                CheckGettingKing(mover);
+            }
+
+            return newBoardState;
+        }  //виртуальное исполнение команды на движение
+
+        private void CheckGettingKing(IChecker checker)
+        {
+            if (checker is WhiteChecker)
+            {
+                if (checker.CurrentCoord.Row == 1)
+                    checker.BecomeKingVirtualy();
+            }
+            else
+            {
+                if (checker.CurrentCoord.Row == 8)
+                    checker.BecomeKingVirtualy();
+            }
         }
 
-        private List<IChecker> GetAllies(Lib.PlayersSide side)
+        private List<IChecker> GetAllies(Lib.PlayersSide side, IChecker[][] currentBoardState)
         {
-            return (side == Lib.PlayersSide.WHITE) ? gameField.WhiteCheckers : gameField.BlackCheckers;
+            List<IChecker> allies = new List<IChecker>();
+            int a = (side == Lib.PlayersSide.BLACK) ? 0 : 1;
+
+            for (int i = 1; i < 9; i++)
+            {
+                for (int j = 1; j < 9; j++)
+                {
+                    IChecker checker = currentBoardState[i][j];
+                    int b = (checker is BlackChecker) ? 0 : 1;
+                    if (currentBoardState[i][j] != null && a == b)
+                    {
+                        allies.Add(currentBoardState[i][j]);
+                    }
+                }
+            }
+
+            return allies;
         }
 
-        private List<IChecker> GetEnemies(Lib.PlayersSide side)
+        private List<IChecker> GetEnemies(Lib.PlayersSide side, IChecker[][] currentBoardState)
         {
-            return (side == Lib.PlayersSide.WHITE) ? gameField.BlackCheckers : gameField.WhiteCheckers;
-        }
+            List<IChecker> enemies = new List<IChecker>();
+            int a = (side == Lib.PlayersSide.BLACK) ? 0 : 1;
 
-        private Coord Destination(Coord killerCoord, Coord victimCoord)
-        {
-            int moveVertical;
-            int moveHorizontal;
-            Coord destination;
+            for (int i = 1; i < 9; i++)
+            {
+                for (int j = 1; j < 9; j++)
+                {
+                    IChecker checker = currentBoardState[i][j];
+                    int b = (checker is BlackChecker) ? 0 : 1;
+                    if (currentBoardState[i][j] != null && a != b)
+                    {
+                        enemies.Add(currentBoardState[i][j]);
+                    }
+                }
+            }
 
-            moveVertical = (killerCoord.Row > victimCoord.Row) ? -1 : 1;
-            moveHorizontal = (killerCoord.Column > victimCoord.Column) ? -1 : 1;
-
-            destination = new Coord(victimCoord.Row + moveVertical, victimCoord.Column + moveHorizontal);
-
-            return destination;
-        }
-
-        private bool CheckSides(IChecker killer, IChecker victim)
-        {
-            return (killer is BlackChecker && victim is WhiteChecker) ||
-                   (killer is WhiteChecker && victim is BlackChecker);
-        }
-
-        private bool CheckGameFieldBorders(int row, int colunmn)
-        {
-            double size = Math.Sqrt(gameField.Grid.Length);
-            return (row <= size && colunmn <= size && row >= 1 && colunmn >= 1);
+            return enemies;
         }
     }
 }

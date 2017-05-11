@@ -8,6 +8,7 @@ namespace UltimateChecker.Classes.Players
         IGame game;
         ICommand turnCommand;
         Lib.PlayersSide side;
+        public Lib.CapitulateDel Capitulate { get; set; }
 
         private bool waitingForStep = false;
         private bool stepCanceled = false;

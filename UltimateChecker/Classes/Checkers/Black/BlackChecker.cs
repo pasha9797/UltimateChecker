@@ -42,6 +42,14 @@ namespace UltimateChecker
             this.checkerUI = checkerUI;
         }
 
+        public object Clone()
+        {
+            return new BlackChecker(this.CheckerState as IBlackCheckerState, this.checkerUI)
+            {
+                CurrentCoord = new Coord(CurrentCoord.Row, CurrentCoord.Column),
+            };
+        }
+
         public bool CheckPossibilityToMove(Coord coord, IGameField field)
         {
             return CheckerState.CheckPossibilityToMove(CurrentCoord, coord, field);
@@ -102,6 +110,14 @@ namespace UltimateChecker
         {
             CheckerState = new BlackNormalCheckerState();
             (checkerUI as CheckerUI).BecomeNormal();
+        }
+        public void BecomeKingVirtualy()
+        {
+            CheckerState = new BlackKingCheckerState();
+        }
+        public void BecomeNormalVirtualy()
+        {
+            CheckerState = new BlackNormalCheckerState();
         }
     }
 

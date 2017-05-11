@@ -9,7 +9,21 @@ namespace UltimateChecker
 {
     public class CheckerFactory
     {
-        public static BlackChecker CreateBlack(Coord coord, IGameField gameField)
+        private static CheckerFactory instance;
+
+        private CheckerFactory()
+        {
+
+        }
+
+        public static CheckerFactory GetInstance()
+        {
+            if (instance == null)
+                instance = new CheckerFactory();
+            return instance;
+        }
+
+        public BlackChecker CreateBlack(Coord coord, IGameField gameField)
         {
             BlackChecker black = new BlackChecker(new BlackNormalCheckerState(), new CheckerUI());
             black.CurrentCoord = coord;
@@ -29,7 +43,7 @@ namespace UltimateChecker
             return black;
         }
 
-        public static WhiteChecker CreateWhite(Coord coord, IGameField gameField)
+        public WhiteChecker CreateWhite(Coord coord, IGameField gameField)
         {
             
             WhiteChecker white = new WhiteChecker(new WhiteNormalCheckerState(), new CheckerUI());
@@ -48,6 +62,20 @@ namespace UltimateChecker
             checkerUI.MovingToAnotherCell += gameField.MainWindow.MoveCheckerToAnotherCell;
             checkerUI.ConnectedChecker = white;
             checkerUI.GetVictim += gameField.GetVictim;
+            return white;
+        }
+
+        public BlackChecker CreateBlackPhantom(Coord coord, IGameField gameField)
+        {
+            BlackChecker black = new BlackChecker(new BlackNormalCheckerState(), null);
+            black.CurrentCoord = coord;
+            return black;
+        }
+
+        public WhiteChecker CreateWhitePhantom(Coord coord, IGameField gameField)
+        {
+            WhiteChecker white = new WhiteChecker(new WhiteNormalCheckerState(), null);
+            white.CurrentCoord = coord;
             return white;
         }
     }

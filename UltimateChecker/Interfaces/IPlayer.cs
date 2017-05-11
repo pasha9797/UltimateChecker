@@ -11,5 +11,6 @@ namespace UltimateChecker
         Task<ICommand> MakeStep(IGameField grid);
         void FinishStep(Coord coord, IChecker mover, IChecker victim);
         void CancelStep();
+        Lib.CapitulateDel Capitulate { get; set; }
     }
 }

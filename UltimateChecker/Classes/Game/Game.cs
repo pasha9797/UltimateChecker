@@ -22,7 +22,6 @@ namespace UltimateChecker
         {
             if (mover.CheckPossibilityToMove(coord, GameField))
             {
-
                 LogStep(mover.CurrentCoord, coord, mover);
                 MoveCheckerDirectly(mover, coord);
                 CheckGettingKing(mover);
@@ -94,6 +93,7 @@ namespace UltimateChecker
             GameField.Grid[checker.CurrentCoord.Row][checker.CurrentCoord.Column] = null;
             checker.CurrentCoord = coord;
             GameField.Grid[checker.CurrentCoord.Row][checker.CurrentCoord.Column] = checker;
+            mainWindow.MoveCheckerToAnotherCell(checker.checkerUI, coord);
         }
 
         public void UndoStep(ICommand command)
@@ -179,18 +179,40 @@ namespace UltimateChecker
 
         }
 
+        public void Capitulate(Lib.PlayersSide side)
+        {
+            for (int i = 1; i <= 8; i++)
+            {
+                for (int j = 1; j <= 8; j++)
+                {
+                    if (side==Lib.PlayersSide.BLACK && GameField.Grid[i][j] is BlackChecker)
+                    {
+                        GameField.Grid[i][j] = null;
+                    }
+                    if (side == Lib.PlayersSide.WHITE && GameField.Grid[i][j] is WhiteChecker)
+                    {
+                        GameField.Grid[i][j] = null;
+                    }
+                }
+            }
+            CheckGameOver();
+        }
+
         public Game(MainWindow mainWindow)
         {
             this.mainWindow = mainWindow;
             GameField = new GameField(mainWindow);
             states = new Dictionary<ICommand, FieldState>();
 
-            BlackPlayer = new Player(this, Lib.PlayersSide.BLACK);
+            BlackPlayer = new BotPlayer(this, Lib.PlayersSide.BLACK);
+            BlackPlayer.Capitulate = Capitulate;
+
             WhitePlayer = new Player(this, Lib.PlayersSide.WHITE);
+            WhitePlayer.Capitulate = Capitulate;
 
             InitializePlayersForCheckers();
 
-            (this.GameField as GameField).SendCommandToPlayerEvent += (WhitePlayer as Player).RecieveCommandFromForm; // какой-то пиздец, а не код, но мне похуй
+            (this.GameField as GameField).SendCommandToPlayerEvent += (WhitePlayer as Player).RecieveCommandFromForm; 
             NextTurn();
         }
 
@@ -206,11 +228,6 @@ namespace UltimateChecker
                 CheckerUI checkerUI = checker.checkerUI as CheckerUI;
                 checkerUI.Player = WhitePlayer;
             }
-        }
-
-        public void AcceptCheckerMovementFromForm(Coord newCoord, IChecker movingChecker)
-        {
-
         }
 
         private void BlockBlack()

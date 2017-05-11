@@ -20,7 +20,7 @@ namespace UltimateChecker
 
     }
 
-    public interface IChecker
+    public interface IChecker:ICloneable
     {
         Coord CurrentCoord { get; set; }
         UserControl checkerUI { get; set; }        
@@ -37,6 +37,9 @@ namespace UltimateChecker
         bool CoordChangedFromForm(Coord newCoord);
         void BecomeKing();
         void BecomeNormal();
+        void BecomeKingVirtualy();
+        void BecomeNormalVirtualy();
+
 
 
         Coord MoveForwardLeft(int numberOfSteps);

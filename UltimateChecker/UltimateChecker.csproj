@@ -58,6 +58,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithms\PriorityQueue.cs" />
+    <Compile Include="Algorithms\TurnTree.cs" />
     <Compile Include="Classes\Checkers\CheckerUI.xaml.cs">
       <DependentUpon>CheckerUI.xaml</DependentUpon>
     </Compile>

@@ -153,6 +153,7 @@ namespace UltimateChecker
         {
             this.mainWindow = mainWindow;
             this.formGrid = mainWindow.grid;
+            CheckerFactory factory = CheckerFactory.GetInstance();
 
             grid = new IChecker[9][];
             for (int i = 1; i <= 8; i++)
@@ -167,21 +168,21 @@ namespace UltimateChecker
             {
                 if (i % 2 == 0)
                 {
-                    CheckerFactory.CreateWhite(new Coord(7, i), this);
-                    CheckerFactory.CreateBlack(new Coord(3, i), this);
-                    CheckerFactory.CreateBlack(new Coord(1, i), this);
+                    factory.CreateWhite(new Coord(7, i), this);
+                    factory.CreateBlack(new Coord(3, i), this);
+                    factory.CreateBlack(new Coord(1, i), this);
                 }
                 else
                 {
-                    CheckerFactory.CreateBlack(new Coord(2, i), this);
-                    CheckerFactory.CreateWhite(new Coord(6, i), this);
-                    CheckerFactory.CreateWhite(new Coord(8, i), this);
+                    factory.CreateBlack(new Coord(2, i), this);
+                    factory.CreateWhite(new Coord(6, i), this);
+                    factory.CreateWhite(new Coord(8, i), this);
                 }
             }
-            
-            //CheckerFactory.CreateBlack(new Coord(5, 2), this);
-            //CheckerFactory.CreateBlack(new Coord(4, 3), this);
-            //IChecker checker = CheckerFactory.CreateWhite(new Coord(2, 3), this);
+
+            //factory.CreateBlack(new Coord(5, 2), this);
+            //factory.CreateBlack(new Coord(4, 3), this);
+            //IChecker checker = factory.CreateWhite(new Coord(2, 3), this);
             //checker.BecomeKing();
         }
     }
